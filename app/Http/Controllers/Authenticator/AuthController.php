@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Authenticator;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-
+    /**
+     * Maneja la autenticación de usuario usando Google.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function googleUser(Request $request)
     {
         // Validación de los datos de entrada
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'token' => 'required|string',
             'data' => 'required|array',
             'data.sub' => 'required|string',
@@ -24,13 +29,22 @@ class AuthController extends Controller
             'data.email_verified' => 'required|boolean',
         ]);
 
+        // Si la validación falla, devolver un error
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
-            // Extraer los datos del JSON
+            // Extraer los datos del request validado
+            $validatedData = $validator->validated();
             $data = $validatedData['data'];
             $googleId = $data['sub'];
             $email = $data['email'];
 
-            // Buscar o crear el usuario
+            // Buscar o crear el usuario con la información proporcionada
             $user = User::firstOrCreate(
                 ['email' => $email],
                 [
@@ -42,9 +56,10 @@ class AuthController extends Controller
                 ]
             );
 
-            // Crear el token Sanctum
+            // Crear el token de Sanctum
             $token = $user->createToken('GoogleToken')->plainTextToken;
 
+            // Responder con los datos del usuario y el token
             return response()->json([
                 'status' => true,
                 'message' => 'User authenticated successfully',
@@ -54,10 +69,11 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role,
-                    'profile_pic' => $user->profile_pic
+                    'profile_pic' => $user->profile_pic,
                 ]
             ], 200);
         } catch (\Throwable $th) {
+            // Manejo de errores en caso de excepciones
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
@@ -65,6 +81,11 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Cierra la sesión del usuario autenticado.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logout(Request $request)
     {
         // Invalidar todos los tokens del usuario
@@ -76,6 +97,11 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Devuelve la información del usuario autenticado.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getUser(Request $request)
     {
         $user = $request->user();
@@ -83,204 +109,7 @@ class AuthController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'role' => $user->role
+            'role' => $user->role,  // Asegúrate de que el campo 'role' exista en la tabla users
         ]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // public function googleUser(Request $request)
-    // {
-    //     // Validación de los datos de entrada
-    //     $validatedData = $request->validate([
-    //         'token' => 'required|string',
-    //         'data' => 'required|array',
-    //         'data.sub' => 'required|string',
-    //         'data.name' => 'required|string',
-    //         'data.given_name' => 'nullable|string',
-    //         'data.family_name' => 'nullable|string',
-    //         'data.picture' => 'nullable|url',
-    //         'data.email' => 'required|email',
-    //         'data.email_verified' => 'required|boolean',
-    //     ]);
-
-    //     try {
-    //         // Extraer los datos del JSON
-    //         $data = $validatedData['data'];
-    //         $googleId = $data['sub'];
-    //         $email = $data['email'];
-
-    //         // Buscar o crear el usuario
-    //         $user = User::firstOrCreate(
-    //             ['email' => $email],
-    //             [
-    //                 'name' => $data['name'],
-    //                 'google_id' => $googleId,
-    //                 'given_name' => $data['given_name'],
-    //                 'family_name' => $data['family_name'],
-    //                 'profile_pic' => $data['picture'],
-    //                 // Considera agregar 'password' => null si es necesario
-    //             ]
-    //         );
-
-    //         // Crear el token Sanctum
-    //         $token = $user->createToken('GoogleToken')->plainTextToken;
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'User authenticated successfully',
-    //             'token' => $token,
-    //             'user' => $user
-    //         ], 200);
-
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $th->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-
-    //     public function logout(Request $request)
-    //     {
-    //         // Invalidar todos los tokens del usuario
-    //         $request->user()->tokens()->delete();
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'User logged out successfully'
-    //         ]);
-    //     }
-
-    //     public function getUser(Request $request)
-    //     {
-    //         $user = $request->user();
-    //         return response()->json([
-    //             'id' => $user->id,
-    //             'name' => $user->name,
-    //             'email' => $user->email,
-    //             'role' => $user->role // Obtener roles
-    //         ]);
-    //     }
-
-
-
-
-
-
-
-
-
-
-
-        // return response()->json($request->all());
-
-
-
-       // {
-       //     return response()->json([
-       //         'success' => true,
-       //         'data' => $request->all(),
-       //         'message' => 'Datos recibidos correctamente.',
-       //     ], 200);
-
-           // dd($request->all());
-
-           // Validación de los datos de entrada
-           // $validatedData = $request->validate([
-           //     'email' => 'required|email',
-           //     'google_id' => 'required|string',
-           //     'name' => 'required|string',
-           // ]);
-
-           // try {
-           //     // Buscar o crear el usuario
-           //     $user = User::firstOrCreate(
-           //         ['email' => $validatedData['email']],
-           //         [
-           //             'name' => $validatedData['name'],
-           //             'google_id' => $validatedData['google_id'],
-           //         ]
-           //     );
-
-           //     // Crear el token Sanctum
-           //     $token = $user->createToken('Google Token')->plainTextToken;
-
-           //     return response()->json([
-           //         'status' => true,
-           //         'message' => 'User authenticated successfully',
-           //         'token' => $token,
-           //         'user' => $user
-           //     ], 200);
-           // } catch (\Throwable $th) {
-           //     return response()->json([
-           //         'status' => false,
-           //         'message' => $th->getMessage()
-           //     ], 500);
-           // }
-    //    }
-
-       // public function logout(Request $request)
-       // {
-       //     // Invalidar todos los tokens del usuario
-       //     $request->user()->tokens()->delete();
-
-       //     return response()->json([
-       //         'status' => true,
-       //         'message' => 'User logged out successfully'
-       //     ]);
-       // }
-
-       // public function getAuthUser(Request $request)
-       // {
-       //     // Devolver los datos del usuario autenticado
-       //     return response()->json([
-       //         'status' => true,
-       //         'user' => $request->user()
-       //     ]);
-       // }
-
 }

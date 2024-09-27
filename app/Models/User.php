@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,22 +13,23 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que se pueden asignar masivamente.
      *
      * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
-        'google_id',
-        'given_name',
-        'family_name',
-        'profile_pic',
-        // Otros campos...
+        'password',
+        'google_id',        // ID único proporcionado por Google
+        'given_name',       // Nombre de pila
+        'family_name',      // Apellido
+        'profile_pic',      // URL de la imagen de perfil de Google
+        'role',             // Rol del usuario (admin, cliente, etc.)
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Atributos que deberían ocultarse para arrays.
      *
      * @var array<int, string>
      */
@@ -38,12 +39,31 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Los atributos que deberían ser tratados como fechas.
      *
      * @var array<string, string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
     ];
+
+    /**
+     * Relación para obtener los roles del usuario.
+     * Si quieres manejar varios roles por usuario, puedes usar una tabla pivot.
+     */
+    public function roles()
+    {
+        // Si usas una tabla intermedia para manejar roles (por ejemplo, tabla `role_user`)
+        return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Función que determina si el usuario tiene un rol específico.
+     * @param string $role
+     * @return bool
+     */
+    public function hasRole(string $role)
+    {
+        return $this->roles()->where('name', $role)->exists();
+    }
 }
