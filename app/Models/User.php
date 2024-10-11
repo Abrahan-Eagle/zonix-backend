@@ -25,6 +25,7 @@ class User extends Authenticatable
         'given_name',       // Nombre de pila
         'family_name',      // Apellido
         'profile_pic',      // URL de la imagen de perfil de Google
+        'AccessToken',
         'role',             // Rol del usuario (admin, cliente, etc.)
     ];
 
@@ -66,4 +67,21 @@ class User extends Authenticatable
     {
         return $this->roles()->where('name', $role)->exists();
     }
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+
+
 }
