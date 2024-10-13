@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('neighborhood_association', function (Blueprint $table) {
             $table->id();
+            $table->string('urbanization name')->nullable();
             $table->string('neighborhood_proof_photo')->nullable(); // asociacion de vecino
             $table->boolean('approved')->default(false);
             $table->timestamps();

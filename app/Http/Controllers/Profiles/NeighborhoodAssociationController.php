@@ -3,58 +3,58 @@
 namespace App\Http\Controllers\Profiles;
 
 use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
 use App\Models\NeighborhoodAssociation;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class NeighborhoodAssociationController extends Controller
 {
     /**
-     * Display a listing of the neighborhood associations.
+     * Listar todas las asociaciones de vecindario.
      */
     public function index()
     {
-        // Obtener todas las asociaciones de vecindario
-        $associations = NeighborhoodAssociation::all();
+        $associations = NeighborhoodAssociation::with('profile')->get();
         return response()->json($associations);
     }
 
     /**
-     * Store a newly created neighborhood association in storage.
+     * Crear una nueva asociación de vecindario.
      */
     public function store(Request $request)
     {
-        // Validar los datos de la solicitud
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'location' => 'nullable|string|max:255',
-            'contact_info' => 'nullable|string|max:255',
+            'urbanization_name' => 'required|string|max:255',
+            'neighborhood_proof_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'approved' => 'boolean',
+            'profile_id' => 'required|exists:profiles,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Crear una nueva asociación de vecindario
+        $photoPath = $request->hasFile('neighborhood_proof_photo')
+            ? $request->file('neighborhood_proof_photo')->store('documents/neighborhood_proofs', 'public')
+            : null;
+
         $association = NeighborhoodAssociation::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'location' => $request->location,
-            'contact_info' => $request->contact_info,
+            'urbanization_name' => $request->urbanization_name,
+            'neighborhood_proof_photo' => $photoPath,
+            'approved' => $request->approved ?? false,
+            'profile_id' => $request->profile_id,
         ]);
 
         return response()->json(['message' => 'Neighborhood association created successfully', 'association' => $association], 201);
     }
 
     /**
-     * Display the specified neighborhood association.
+     * Mostrar una asociación específica.
      */
     public function show($id)
     {
-        // Buscar la asociación de vecindario por ID
-        $association = NeighborhoodAssociation::find($id);
+        $association = NeighborhoodAssociation::with('profile')->find($id);
 
         if (!$association) {
             return response()->json(['message' => 'Neighborhood association not found'], 404);
@@ -64,54 +64,53 @@ class NeighborhoodAssociationController extends Controller
     }
 
     /**
-     * Update the specified neighborhood association in storage.
+     * Actualizar una asociación existente.
      */
     public function update(Request $request, $id)
     {
-        // Buscar la asociación de vecindario por ID
         $association = NeighborhoodAssociation::find($id);
 
         if (!$association) {
             return response()->json(['message' => 'Neighborhood association not found'], 404);
         }
 
-        // Validar los datos de la solicitud
         $validator = Validator::make($request->all(), [
-            'name' => 'string|max:255',
-            'description' => 'nullable|string',
-            'location' => 'nullable|string|max:255',
-            'contact_info' => 'nullable|string|max:255',
+            'urbanization_name' => 'string|max:255',
+            'neighborhood_proof_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'approved' => 'boolean',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Actualizar la asociación de vecindario
-        $association->name = $request->name ?? $association->name;
-        $association->description = $request->description ?? $association->description;
-        $association->location = $request->location ?? $association->location;
-        $association->contact_info = $request->contact_info ?? $association->contact_info;
+        if ($request->hasFile('neighborhood_proof_photo')) {
+            Storage::disk('public')->delete($association->neighborhood_proof_photo);
+            $association->neighborhood_proof_photo = $request->file('neighborhood_proof_photo')->store('documents/neighborhood_proofs', 'public');
+        }
 
-        // Guardar los cambios
+        $association->urbanization_name = $request->urbanization_name ?? $association->urbanization_name;
+        $association->approved = $request->approved ?? $association->approved;
         $association->save();
 
         return response()->json(['message' => 'Neighborhood association updated successfully', 'association' => $association]);
     }
 
     /**
-     * Remove the specified neighborhood association from storage.
+     * Eliminar una asociación.
      */
     public function destroy($id)
     {
-        // Buscar la asociación de vecindario por ID
         $association = NeighborhoodAssociation::find($id);
 
         if (!$association) {
             return response()->json(['message' => 'Neighborhood association not found'], 404);
         }
 
-        // Eliminar la asociación de vecindario
+        if ($association->neighborhood_proof_photo) {
+            Storage::disk('public')->delete($association->neighborhood_proof_photo);
+        }
+
         $association->delete();
 
         return response()->json(['message' => 'Neighborhood association deleted successfully']);

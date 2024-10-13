@@ -10,10 +10,10 @@ class NeighborhoodAssociation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'description',
-        'location',
-        'contact_info',
+        'urbanization_name',
+        'neighborhood_proof_photo',
+        'approved',
+        'profile_id',
     ];
 
     // Definir relaciones si es necesario

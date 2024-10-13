@@ -37,8 +37,9 @@ class Profile extends Model
 
     public function gasCylinders()
     {
-        return $this->hasMany(GasCylinder::class, 'profiles_id');
+        return $this->hasMany(GasCylinder::class, 'profile_id'); // Corregido
     }
+
 
 
 
@@ -56,6 +57,9 @@ class Profile extends Model
     public function documents()
     {
         return $this->hasMany(Document::class);
+    }
+    public function addresses() {
+        return $this->hasMany(Address::class);
     }
 
 

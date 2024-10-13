@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('profile_id')->constrained('profiles')->onDelete('cascade');
             $table->foreignId('operator_code_id')->constrained('operator_codes')->onDelete('cascade');
-            $table->string('number', 7); // Número local
+            $table->string('number', 7); // Número local con longitud fija
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
 
-            // Asegúrate de que solo haya un teléfono principal por perfil
-            $table->unique(['profile_id', 'is_primary']);
+            // Clave única: solo un teléfono principal permitido por perfil
+            $table->unique(['profile_id', 'number']); // Combina número y perfil para evitar duplicados
         });
     }
 

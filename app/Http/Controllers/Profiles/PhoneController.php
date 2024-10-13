@@ -14,7 +14,6 @@ class PhoneController extends Controller
      */
     public function index()
     {
-        // Obtener todos los teléfonos
         $phones = Phone::with(['profile', 'operatorCode'])->get();
         return response()->json($phones);
     }
@@ -24,11 +23,10 @@ class PhoneController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos de la solicitud
         $validator = Validator::make($request->all(), [
             'profile_id' => 'required|exists:profiles,id',
             'operator_code_id' => 'required|exists:operator_codes,id',
-            'number' => 'required|string|min:7|max:7',
+            'number' => 'required|string|min:7|max:7|unique:phones,number',
             'is_primary' => 'boolean',
         ]);
 
@@ -36,18 +34,15 @@ class PhoneController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Verificar si se está tratando de establecer un teléfono principal
+        // Si se marca como principal, desmarcar otros teléfonos principales del mismo perfil
         if ($request->is_primary) {
-            Phone::where('profile_id', $request->profile_id)->update(['is_primary' => false]);
+            Phone::where('profile_id', $request->profile_id)
+                ->where('is_primary', true)
+                ->update(['is_primary' => false]);
         }
 
-        // Crear un nuevo teléfono
-        $phone = Phone::create([
-            'profile_id' => $request->profile_id,
-            'operator_code_id' => $request->operator_code_id,
-            'number' => $request->number,
-            'is_primary' => $request->is_primary,
-        ]);
+        // Crear el nuevo teléfono
+        $phone = Phone::create($request->all());
 
         return response()->json(['message' => 'Phone created successfully', 'phone' => $phone], 201);
     }
@@ -57,7 +52,6 @@ class PhoneController extends Controller
      */
     public function show($id)
     {
-        // Buscar el teléfono por ID
         $phone = Phone::with(['profile', 'operatorCode'])->find($id);
 
         if (!$phone) {
@@ -72,18 +66,16 @@ class PhoneController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Buscar el teléfono por ID
         $phone = Phone::find($id);
 
         if (!$phone) {
             return response()->json(['message' => 'Phone not found'], 404);
         }
 
-        // Validar los datos de la solicitud
         $validator = Validator::make($request->all(), [
             'profile_id' => 'exists:profiles,id',
             'operator_code_id' => 'exists:operator_codes,id',
-            'number' => 'string|min:7|max:7',
+            'number' => "string|min:7|max:7|unique:phones,number,{$id}",
             'is_primary' => 'boolean',
         ]);
 
@@ -91,19 +83,15 @@ class PhoneController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Actualizar el estado de 'is_primary' si es necesario
+        // Si se marca como principal, desmarcar otros teléfonos principales del mismo perfil
         if ($request->is_primary) {
-            Phone::where('profile_id', $phone->profile_id)->update(['is_primary' => false]);
+            Phone::where('profile_id', $phone->profile_id)
+                ->where('is_primary', true)
+                ->update(['is_primary' => false]);
         }
 
-        // Actualizar el teléfono
-        $phone->profile_id = $request->profile_id ?? $phone->profile_id;
-        $phone->operator_code_id = $request->operator_code_id ?? $phone->operator_code_id;
-        $phone->number = $request->number ?? $phone->number;
-        $phone->is_primary = $request->is_primary ?? $phone->is_primary;
-
-        // Guardar los cambios
-        $phone->save();
+        // Actualizar los datos del teléfono
+        $phone->update($request->all());
 
         return response()->json(['message' => 'Phone updated successfully', 'phone' => $phone]);
     }
@@ -113,17 +101,14 @@ class PhoneController extends Controller
      */
     public function destroy($id)
     {
-        // Buscar el teléfono por ID
         $phone = Phone::find($id);
 
         if (!$phone) {
             return response()->json(['message' => 'Phone not found'], 404);
         }
 
-        // Eliminar el teléfono
         $phone->delete();
 
         return response()->json(['message' => 'Phone deleted successfully']);
     }
 }
-
