@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('family_name')->nullable(); // Agregar campo para el apellido
             $table->string('profile_pic')->nullable(); // Agregar campo para la foto de perfil
             $table->string('AccessToken')->nullable(); // Campo para guardar el token de acceso
-            $table->enum('role', ['admin', 'users'])->default('admin');
+            $table->enum('role', ['admin', 'operator', 'users', 'neighborhood_association', 'gas_supplier', 'guest', 'auditor', 'super_admin', 'dispatcher', 'inventory_manager', 'support_agent', 'technician', 'regional_manager', 'finance_manager', 'marketing_manager', 'quality_control', 'system_monitor'])->default('users');
             $table->rememberToken();
             $table->timestamps();
         });
