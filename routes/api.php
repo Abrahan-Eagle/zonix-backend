@@ -75,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [GasTicketController::class, 'index']);
         Route::post('/', [GasTicketController::class, 'store']);
         Route::get('/{id}', [GasTicketController::class, 'show']);
+        Route::get('/getGasCylinders/{id}', [GasTicketController::class, 'getGasCylinders']);
         Route::put('/{id}', [GasTicketController::class, 'update']);
         Route::delete('/{id}', [GasTicketController::class, 'destroy']);
     });

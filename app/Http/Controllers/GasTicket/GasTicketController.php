@@ -137,15 +137,39 @@ class GasTicketController extends Controller
      */
     public function show($id)
     {
-        // Buscar el ticket de gas por ID
-        $ticket = GasTicket::with(['profile', 'gasCylinder'])->find($id);
+        $profile = Profile::where('user_id', $id)->first();
 
-        if (!$ticket) {
-            return response()->json(['message' => 'Gas ticket not found'], 404);
+        if (!$profile) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
+        // dd($profile->id);
+        // Obtener los tickets de gas asociados al perfil encontrado
+        $tickets = GasTicket::with(['profile', 'gasCylinder'])
+            ->where('profile_id', $profile->id)
+            ->get();
+
+        if ($tickets->isEmpty()) {
+            return response()->json(['message' => 'No gas tickets found'], 404);
         }
 
-        return response()->json($ticket);
+        return response()->json($tickets);
     }
+
+
+    public function getGasCylinders($id)
+    {
+
+        $profile = Profile::where('user_id', $id)->first();
+
+
+        $gasCylinders = GasCylinder::with(['profile', 'gasSupplier'])
+            -> where('profiles_id', $profile->id)
+            -> where('approved', true) // Filtrar bombonas aprobadas
+            -> get();
+
+        return response()->json($gasCylinders);
+    }
+
 
     /**
      * Update the specified gas ticket.

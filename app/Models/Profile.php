@@ -43,6 +43,11 @@ class Profile extends Model
         return $this->hasMany(GasCylinder::class, 'profile_id'); // La clave foránea debe coincidir con la columna en la tabla gas_cylinders
     }
 
+    public function gasSuppliers()
+    {
+        return $this->belongsTo(GasSupplier::class); // La clave foránea debe coincidir con la columna en la tabla gas_cylinders
+    }
+
     // Relación uno a muchos con el modelo Phone
     public function phones()
     {

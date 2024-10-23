@@ -27,6 +27,11 @@ class GasSupplier extends Model
         return $this->hasMany(GasTicket::class);
     }
 
+    public function gasSuppliers()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
 
 }
 

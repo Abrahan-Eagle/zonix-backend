@@ -33,9 +33,12 @@ class GasCylinder extends Model
         return $this->belongsTo(GasTicket::class);
     }
 
+
     public function gasSupplier()
     {
-        return $this->belongsTo(GasSupplier::class, 'company_supplier_id');
+    return $this->belongsTo(GasSupplier::class, 'company_supplier_id');
     }
+
+
 
 }
