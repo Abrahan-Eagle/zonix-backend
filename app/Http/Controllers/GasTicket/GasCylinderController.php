@@ -47,8 +47,8 @@ class GasCylinderController extends Controller
         $cylinderData['profile_id'] = $request->input('user_id');
 
         // Formatear el código de la bombona
-        $currentDate = now()->format('Ymd'); // Formato de fecha YYYYMMDD
-        $cylinderData['gas_cylinder_code'] = 'CYL-' . $request->input('gas_cylinder_code') . '-' . $currentDate . '-' . $request->input('user_id');
+        // $currentDate = now()->format('Ymd'); // Formato de fecha YYYYMMDD
+        $cylinderData['gas_cylinder_code'] = 'CYL-' . $request->input('gas_cylinder_code') . '-' . $request->input('user_id');
 
         $cylinderData['cylinder_quantity'] = 1; // Estado inicial de aprobación.
         $cylinderData['approved'] = 0; // Estado inicial de aprobación.
