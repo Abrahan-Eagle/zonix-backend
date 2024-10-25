@@ -5,6 +5,10 @@ namespace App\Http\Controllers\GasTicket;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\GasCylinder;
+use App\Models\GasSupplier;
+use App\Models\Profile;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Validator;
 
 class GasCylinderController extends Controller
 {
@@ -15,24 +19,101 @@ class GasCylinderController extends Controller
         return response()->json($cylinders);
     }
 
-    // Crear una nueva bombona de gas
+
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'supplier_id' => 'required|exists:gas_suppliers,id',
-            'capacity' => 'required|numeric',
-            'available_quantity' => 'required|numeric',
+        // Validación de los datos de entrada.
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id', // Asegúrate de que el user_id existe
+            'gas_cylinder_code' => 'required|string|max:255',
+            'cylinder_type' => 'required|in:small,wide',
+            'cylinder_weight' => 'required|in:10kg,18kg,45kg',
+            'manufacturing_date' => 'required|date',
+            'photo_gas_cylinder' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'company_supplier_id' => 'required|exists:gas_suppliers,id', // Clave foránea a la tabla de proveedores de gas
         ]);
 
-        $cylinder = GasCylinder::create($validated);
-        return response()->json($cylinder, 201);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        // Preparar los datos para la creación de la bombona.
+        $cylinderData = $request->only([
+            'cylinder_type',
+            'cylinder_weight', 'manufacturing_date', 'company_supplier_id'
+        ]);
+
+        // Cambiar user_id a profile_id
+        $cylinderData['profile_id'] = $request->input('user_id');
+
+        // Formatear el código de la bombona
+        $currentDate = now()->format('Ymd'); // Formato de fecha YYYYMMDD
+        $cylinderData['gas_cylinder_code'] = 'CYL-' . $request->input('gas_cylinder_code') . '-' . $currentDate . '-' . $request->input('user_id');
+
+        $cylinderData['cylinder_quantity'] = 1; // Estado inicial de aprobación.
+        $cylinderData['approved'] = 0; // Estado inicial de aprobación.
+
+        // Manejar la carga de la imagen.
+        if ($request->hasFile('photo_gas_cylinder')) {
+            // Obtener la URL base según el entorno.
+            $baseUrl = env('APP_ENV') === 'production'
+                ? env('APP_URL_PRODUCTION')
+                : env('APP_URL_LOCAL');
+
+            // Guardar la nueva imagen en el disco público.
+            $path = $request->file('photo_gas_cylinder')->store('cylinder_images', 'public');
+            $cylinderData['photo_gas_cylinder'] = $baseUrl . '/storage/' . $path; // Guarda la URL pública.
+        }
+
+        // Crear la bombona.
+        $gasCylinder = GasCylinder::create($cylinderData);
+
+        return response()->json([
+            'message' => 'Bombona creada exitosamente.',
+            'gasCylinder' => $gasCylinder
+        ], 201);
     }
 
-    // Mostrar una bombona específica
+
+
+    public function getGasSuppliers()
+    {
+        $suppliers = GasSupplier::all(['id', 'name']); // Filtramos solo los campos necesarios
+        return response()->json($suppliers, 200);
+    }
+
+
+
     public function show($id)
     {
-        $cylinder = GasCylinder::findOrFail($id);
-        return response()->json($cylinder);
+        // Validar que el ID sea un número válido
+        if (!is_numeric($id)) {
+            return response()->json(['message' => 'Invalid user ID'], 400);
+        }
+
+        try {
+            // Buscar el perfil asociado al usuario con manejo automático de error
+            $profile = Profile::where('user_id', $id)->firstOrFail();
+
+            // Obtener las bombonas asociadas al perfil junto con el proveedor
+            $cylinders = GasCylinder::with('gasSupplier')
+                ->where('profile_id', $profile->id)
+                ->get();
+
+            // Verificar si hay bombonas encontradas
+            if ($cylinders->isEmpty()) {
+                return response()->json(['message' => 'No gas cylinders found'], 404);
+            }
+
+            // Retornar las bombonas en formato JSON
+            return response()->json($cylinders);
+        } catch (ModelNotFoundException $e) {
+            // Manejar si no se encuentra el perfil
+            return response()->json(['message' => 'Profile not found'], 404);
+        } catch (\Exception $e) {
+            // Manejar cualquier otro error
+            return response()->json(['message' => 'An error occurred'], 500);
+        }
     }
 
     // Actualizar una bombona de gas

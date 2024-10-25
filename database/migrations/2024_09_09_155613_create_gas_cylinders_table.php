@@ -25,8 +25,8 @@ return new class extends Migration
 
 
             // Relación con la tabla compania de gas
-            $table->unsignedBigInteger('profiles_id'); // Clave foránea hacia la tabla users
-            $table->foreign('profiles_id')->references('id')->on('profiles')->onDelete('cascade');
+            $table->unsignedBigInteger('profile_id'); // Clave foránea hacia la tabla users
+            $table->foreign('profile_id')->references('id')->on('profiles')->onDelete('cascade');
             $table->unsignedBigInteger('company_supplier_id')->nullable(); // nombre de la compania
             $table->foreign('company_supplier_id')->references('id')->on('gas_suppliers')->onDelete('cascade');
         });

@@ -36,8 +36,8 @@ class GasCylinderFactory extends Factory
             'approved' => $this->faker->boolean(),
             'photo_gas_cylinder' => null, // puedes agregar una imagen si lo necesitas
             'manufacturing_date' => $this->faker->date('Y-m-d'),
-            // 'profiles_id' => Profile::factory(), // Relación con Profile
-            'profiles_id' => $profile ? $profile->id : null, // Relación con Profile
+            // 'profile_id' => Profile::factory(), // Relación con Profile
+            'profile_id' => $profile ? $profile->id : null, // Relación con Profile
             // 'company_supplier_id' => GasSupplier::factory(), // Relación con GasSupplier, si lo necesitas
             'company_supplier_id' => $supplier ? $supplier->id : null, // Maneja si no hay proveedores
         ];

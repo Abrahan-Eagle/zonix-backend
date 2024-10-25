@@ -19,13 +19,13 @@ class GasCylinder extends Model
         'approved',
         'photo_gas_cylinder',
         'manufacturing_date',
-        'profiles_id',
+        'profile_id',
         'company_supplier_id',
     ];
 
     public function profile()
     {
-        return $this->belongsTo(Profile::class, 'profiles_id');
+        return $this->belongsTo(Profile::class, 'profile_id');
     }
 
     public function gasTicket()

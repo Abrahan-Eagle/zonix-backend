@@ -163,7 +163,7 @@ class GasTicketController extends Controller
 
 
         $gasCylinders = GasCylinder::with(['profile', 'gasSupplier'])
-            -> where('profiles_id', $profile->id)
+            -> where('profile_id', $profile->id)
             -> where('approved', true) // Filtrar bombonas aprobadas
             -> get();
 

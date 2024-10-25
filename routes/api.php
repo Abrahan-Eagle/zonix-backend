@@ -87,6 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('cylinders')->group(function () {
         Route::get('/', [GasCylinderController::class, 'index']);
         Route::post('/', [GasCylinderController::class, 'store']);
+        Route::get('/getGasSuppliers', [GasCylinderController::class, 'getGasSuppliers']);
         Route::get('/{id}', [GasCylinderController::class, 'show']);
         Route::put('/{id}', [GasCylinderController::class, 'update']);
         Route::delete('/{id}', [GasCylinderController::class, 'destroy']);
