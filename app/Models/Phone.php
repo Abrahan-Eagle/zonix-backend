@@ -17,6 +17,7 @@ class Phone extends Model
         'operator_code_id',
         'number',
         'is_primary',
+        'status',
     ];
 
     /**

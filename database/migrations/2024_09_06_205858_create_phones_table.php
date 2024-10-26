@@ -17,10 +17,9 @@ return new class extends Migration
             $table->foreignId('operator_code_id')->constrained('operator_codes')->onDelete('cascade');
             $table->string('number', 7); // Número local con longitud fija
             $table->boolean('is_primary')->default(false);
+            $table->boolean('status')->default(true); // se muestra el correo solo si esta activo
             $table->timestamps();
 
-            // Clave única: solo un teléfono principal permitido por perfil
-            $table->unique(['profile_id', 'number']); // Combina número y perfil para evitar duplicados
         });
     }
 
