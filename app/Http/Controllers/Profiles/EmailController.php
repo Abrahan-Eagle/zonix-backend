@@ -15,7 +15,7 @@ class EmailController extends Controller
     public function index()
     {
         // Obtener todos los correos electrónicos
-        $emails = Email::with('profile')->get();
+        $emails = Email::with('profile')->where('status', true)->get();
         return response()->json($emails);
     }
 
@@ -24,7 +24,6 @@ class EmailController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos de la solicitud
         $validator = Validator::make($request->all(), [
             'profile_id' => 'required|exists:profiles,id',
             'email' => 'required|email|unique:emails,email',
@@ -35,90 +34,136 @@ class EmailController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Verificar si se está tratando de establecer un correo electrónico principal
         if ($request->is_primary) {
-            Email::where('profile_id', $request->profile_id)->update(['is_primary' => false]);
+            Email::where('profile_id', $request->profile_id)
+                ->where('is_primary', true)
+                ->update(['is_primary' => false]);
         }
 
-        // Crear un nuevo correo electrónico
         $email = Email::create([
             'profile_id' => $request->profile_id,
             'email' => $request->email,
-            'is_primary' => $request->is_primary,
+            'is_primary' => $request->is_primary ?? false,
         ]);
 
         return response()->json(['message' => 'Email created successfully', 'email' => $email], 201);
     }
+
 
     /**
      * Display the specified email.
      */
     public function show($id)
     {
-        // Buscar el correo electrónico por ID
-        $email = Email::with('profile')->find($id);
+        // Buscar el correo electrónico por ID y que esté activo
+        $email = Email::with('profile')->where('profile_id', $id)->where('status', true)->get();
 
         if (!$email) {
-            return response()->json(['message' => 'Email not found'], 404);
+            return response()->json(['message' => 'Email not found or inactive'], 404);
         }
 
         return response()->json($email);
     }
+
 
     /**
      * Update the specified email in storage.
      */
     public function update(Request $request, $id)
     {
-        // Buscar el correo electrónico por ID
+        // Buscar el correo específico por ID
         $email = Email::find($id);
 
         if (!$email) {
             return response()->json(['message' => 'Email not found'], 404);
         }
 
-        // Validar los datos de la solicitud
+        // Validar que el campo 'is_primary' sea booleano
         $validator = Validator::make($request->all(), [
-            'profile_id' => 'exists:profiles,id',
-            'email' => 'email|unique:emails,email,' . $id,
-            'is_primary' => 'boolean',
+            'is_primary' => 'required|boolean',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Actualizar el estado de 'is_primary' si es necesario
+        // Si se establece como principal, marcar los demás correos del perfil como secundarios
         if ($request->is_primary) {
-            Email::where('profile_id', $email->profile_id)->update(['is_primary' => false]);
+            Email::where('profile_id', $email->profile_id)
+                ->where('id', '!=', $email->id) // Excluir el correo actual
+                ->update(['is_primary' => false]);
         }
 
-        // Actualizar el correo electrónico
-        $email->profile_id = $request->profile_id ?? $email->profile_id;
-        $email->email = $request->email ?? $email->email;
-        $email->is_primary = $request->is_primary ?? $email->is_primary;
-
-        // Guardar los cambios
+        // Actualizar el campo 'is_primary'
+        $email->is_primary = $request->is_primary;
         $email->save();
 
-        return response()->json(['message' => 'Email updated successfully', 'email' => $email]);
+        return response()->json([
+            'message' => 'Email updated successfully',
+            'email' => $email,
+        ]);
     }
+
+
+
+
+    // public function update(Request $request, $id)
+    // {
+    //     // Buscar el correo electrónico por profile_id
+    //     $email = Email::where('profile_id', $id)->first();
+
+    //     if (!$email) {
+    //         return response()->json(['message' => 'Email not found'], 404);
+    //     }
+
+    //     // Validar los datos de la solicitud
+    //     $validator = Validator::make($request->all(), [
+    //         'email' => 'email|unique:emails,email,' . $email->id,
+    //         'is_primary' => 'boolean',
+    //         'status' => 'boolean', // Validamos el status
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['error' => $validator->errors()], 400);
+    //     }
+
+    //     // Actualizar el estado de 'is_primary' si se establece como verdadero
+    //     if ($request->is_primary) {
+    //         Email::where('profile_id', $id)
+    //             ->where('is_primary', true)
+    //             ->where('id', '!=', $email->id) // No cambiar el mismo email
+    //             ->update(['is_primary' => false]);
+    //     }
+
+    //     // Actualizar los campos del correo electrónico
+    //     $email->email = $request->email ?? $email->email;
+    //     $email->is_primary = $request->is_primary ?? $email->is_primary;
+    //     $email->status = $request->status ?? $email->status;
+
+    //     // Guardar los cambios
+    //     $email->save();
+
+    //     return response()->json(['message' => 'Email updated successfully', 'email' => $email]);
+    // }
+
+
 
     /**
      * Remove the specified email from storage.
      */
     public function destroy($id)
     {
-        // Buscar el correo electrónico por ID
         $email = Email::find($id);
 
         if (!$email) {
             return response()->json(['message' => 'Email not found'], 404);
         }
 
-        // Eliminar el correo electrónico
-        $email->delete();
+        // Cambiar el estado del correo a inactivo
+        $email->status = false;
+        $email->save();
 
-        return response()->json(['message' => 'Email deleted successfully']);
+        return response()->json(['message' => 'Email marked as inactive']);
     }
+
 }

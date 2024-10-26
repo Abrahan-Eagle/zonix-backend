@@ -14,12 +14,10 @@ return new class extends Migration
         Schema::create('emails', function (Blueprint $table) {
             $table->id();
             $table->foreignId('profile_id')->constrained('profiles')->onDelete('cascade');
-            $table->string('email')->unique(); // Correo electrónico
-            $table->boolean('is_primary')->default(false);
+            $table->string('email')->unique(); // Correo electrónico único
+            $table->boolean('is_primary')->default(false); // Solo uno puede ser primario por perfil
+            $table->boolean('status')->default(true); // se muestra el correo solo si esta activo
             $table->timestamps();
-
-            // Asegúrate de que solo haya un correo electrónico principal por perfil
-            $table->unique(['profile_id', 'is_primary']);
         });
     }
 
