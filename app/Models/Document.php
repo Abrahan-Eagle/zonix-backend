@@ -12,12 +12,15 @@ class Document extends Model
     use HasFactory;
 
     /**
-     * Los atributos que se pueden asignar masivamente.
+     * Los atributos que se pueden asignar másivamente.
      */
     protected $fillable = [
         'profile_id',
         'type',
         'number',
+        'receipt_n',
+        'rif_url',
+        'tax_domicile',
         'front_image',
         'back_image',
         'issued_at',
@@ -45,53 +48,23 @@ class Document extends Model
     }
 
     /**
-     * Mutator para la ruta de la imagen frontal.
+     * Mutador para la ruta de la imagen frontal.
      */
     protected function frontImage(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value ? url("storage/{$value}") : null,
+            get: fn($value) => $value ? url("storage/{$value}") : null,
         );
     }
 
     /**
-     * Mutator para la ruta de la imagen trasera.
+     * Mutador para la ruta de la imagen trasera.
      */
     protected function backImage(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value ? url("storage/{$value}") : null,
+            get: fn($value) => $value ? url("storage/{$value}") : null,
         );
     }
 
-    // /**
-    //  * Accessor para el estado de vencimiento.
-    //  */
-    // protected function isExpired(): Attribute
-    // {
-    //     return Attribute::make(
-    //         get: fn () => $this->expires_at && Carbon::now()->greaterThan($this->expires_at),
-    //     );
-    // }
-
-    /**
-     * Scope para filtrar documentos aprobados.
-     */
-    public function scopeApproved($query)
-    {
-        return $query->where('approved', true);
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->where('status', true);
-    }
-
-    // /**
-    //  * Scope para filtrar documentos vencidos.
-    //  */
-    // public function scopeExpired($query)
-    // {
-    //     return $query->whereDate('expires_at', '<', Carbon::now());
-    // }
 }

@@ -7,13 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Document;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class DocumentController extends Controller
 {
     public function index()
     {
-        $documents = Document::with('profile')->active()->get(); // Filtra solo los activos
+        $documents = Document::with('profile')->active()->get();
         return response()->json($documents);
     }
 
@@ -36,12 +35,18 @@ class DocumentController extends Controller
 
         $paths = $this->handleImageUpload($request);
 
+        // Crear el documento con valores predeterminados
         $document = Document::create(array_merge(
             $request->only([
                 'profile_id', 'type', 'number', 'RECEIPT_N', 'rif_url',
-                'taxDomicile', 'issued_at', 'expires_at', 'status'
+                'taxDomicile', 'issued_at', 'expires_at'
             ]),
-            $paths
+            $paths,
+            [
+                'status' => true,
+                'approved' => false,
+                'count' => 1,
+            ]
         ));
 
         return response()->json(['message' => 'Document created successfully', 'document' => $document], 201);
@@ -49,9 +54,12 @@ class DocumentController extends Controller
 
     public function show($id)
     {
-        $document = Document::with('profile')->where('profile_id', $id)->where('status', true)->get();
+        $document = Document::with('profile')
+            ->where('profile_id', $id)
+            ->where('status', true)
+            ->get();
 
-        if (!$document) {
+        if ($document->isEmpty()) {
             return response()->json(['message' => 'Document not found'], 404);
         }
 
@@ -105,7 +113,8 @@ class DocumentController extends Controller
             'profile_id' => 'required|exists:profiles,id',
             'issued_at' => 'nullable|date',
             'expires_at' => 'nullable|date|after_or_equal:issued_at',
-            'status' => 'boolean'
+            'status' => 'boolean',
+            'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
         ];
 
         switch ($type) {
@@ -113,8 +122,8 @@ class DocumentController extends Controller
             case 'passport':
                 $rules = array_merge($rules, [
                     'number' => 'required|integer',
-                    'front_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-                    'back_image' => $type === 'ci' ? 'nullable|image|mimes:jpg,jpeg,png|max:2048' : 'prohibited',
+                    'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
+                    'back_image' => $type === 'ci' ? 'nullable|image|mimes:jpg,jpeg,png' : 'prohibited',
                 ]);
                 break;
 
@@ -124,13 +133,13 @@ class DocumentController extends Controller
                     'RECEIPT_N' => 'nullable|integer',
                     'rif_url' => 'nullable|string',
                     'taxDomicile' => 'nullable|string',
-                    'front_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                    'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
                 ]);
                 break;
 
             case 'neighborhood_association':
                 $rules = array_merge($rules, [
-                    'front_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                    'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
                 ]);
                 break;
         }
@@ -169,3 +178,175 @@ class DocumentController extends Controller
         }
     }
 }
+
+
+
+// namespace App\Http\Controllers\Profiles;
+
+// use App\Http\Controllers\Controller;
+// use Illuminate\Http\Request;
+// use App\Models\Document;
+// use Illuminate\Support\Facades\Validator;
+// use Illuminate\Support\Facades\Storage;
+
+// class DocumentController extends Controller
+// {
+//     public function index()
+//     {
+//         $documents = Document::with('profile')->active()->get();
+//         return response()->json($documents);
+//     }
+
+//     public function store(Request $request)
+//     {
+//         // Validación para verificar si el documento ya existe
+//         $existingDocument = Document::where('profile_id', $request->profile_id)
+//             ->where('type', $request->type)
+//             ->first();
+
+//         if ($existingDocument) {
+//             return response()->json(['error' => 'A document of type ' . $request->type . ' already exists for this profile.'], 400);
+//         }
+
+//         $validator = $this->getValidator($request->all(), $request->type);
+
+//         if ($validator->fails()) {
+//             return response()->json(['error' => $validator->errors()], 400);
+//         }
+
+//         $paths = $this->handleImageUpload($request);
+
+//         $document = Document::create(array_merge(
+//             $request->only([
+//                 'profile_id', 'type', 'number', 'RECEIPT_N', 'rif_url',
+//                 'taxDomicile', 'issued_at', 'expires_at', 'status'
+//             ]),
+//             $paths
+//         ));
+
+//         return response()->json(['message' => 'Document created successfully', 'document' => $document], 201);
+//     }
+
+//     public function show($id)
+//     {
+//         $document = Document::with('profile')->where('profile_id', $id)->where('status', true)->get();
+
+//         if ($document->isEmpty()) {
+//             return response()->json(['message' => 'Document not found'], 404);
+//         }
+
+//         return response()->json($document);
+//     }
+
+//     public function update(Request $request, $id)
+//     {
+//         $document = Document::find($id);
+
+//         if (!$document) {
+//             return response()->json(['message' => 'Document not found'], 404);
+//         }
+
+//         $validator = $this->getValidator($request->all(), $request->type ?? $document->type);
+
+//         if ($validator->fails()) {
+//             return response()->json(['error' => $validator->errors()], 400);
+//         }
+
+//         $paths = $this->handleImageUpload($request, $document);
+
+//         $document->update(array_merge(
+//             $request->only([
+//                 'type', 'number', 'RECEIPT_N', 'rif_url', 'taxDomicile',
+//                 'issued_at', 'expires_at', 'status'
+//             ]),
+//             $paths
+//         ));
+
+//         return response()->json(['message' => 'Document updated successfully', 'document' => $document]);
+//     }
+
+//     public function destroy($id)
+//     {
+//         $document = Document::find($id);
+
+//         if (!$document) {
+//             return response()->json(['message' => 'Document not found'], 404);
+//         }
+
+//         $this->deleteImages($document);
+//         $document->delete();
+
+//         return response()->json(['message' => 'Document deleted successfully']);
+//     }
+
+//     private function getValidator(array $data, string $type)
+//     {
+//         $rules = [
+//             'profile_id' => 'required|exists:profiles,id',
+//             'issued_at' => 'nullable|date',
+//             'expires_at' => 'nullable|date|after_or_equal:issued_at',
+//             'status' => 'boolean',
+//             'front_image' => 'nullable|image|mimes:jpg,jpeg,png', // Verifica esta regla
+//         ];
+
+//         switch ($type) {
+//             case 'ci':
+//             case 'passport':
+//                 $rules = array_merge($rules, [
+//                     'number' => 'required|integer',
+//                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
+//                     'back_image' => $type === 'ci' ? 'nullable|image|mimes:jpg,jpeg,png' : 'prohibited',
+//                 ]);
+//                 break;
+
+//             case 'rif':
+//                 $rules = array_merge($rules, [
+//                     'number' => 'required|integer',
+//                     'RECEIPT_N' => 'nullable|integer',
+//                     'rif_url' => 'nullable|string',
+//                     'taxDomicile' => 'nullable|string',
+//                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
+//                 ]);
+//                 break;
+
+//             case 'neighborhood_association':
+//                 $rules = array_merge($rules, [
+//                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
+//                 ]);
+//                 break;
+//         }
+
+//         return Validator::make($data, $rules);
+//     }
+
+//     private function handleImageUpload(Request $request, Document $document = null)
+//     {
+//         $paths = [];
+
+//         if ($request->hasFile('front_image')) {
+//             if ($document && $document->front_image) {
+//                 Storage::disk('public')->delete($document->front_image);
+//             }
+//             $paths['front_image'] = $request->file('front_image')->store('documents/front', 'public');
+//         }
+
+//         if ($request->hasFile('back_image')) {
+//             if ($document && $document->back_image) {
+//                 Storage::disk('public')->delete($document->back_image);
+//             }
+//             $paths['back_image'] = $request->file('back_image')->store('documents/back', 'public');
+//         }
+
+//         return $paths;
+//     }
+
+//     private function deleteImages(Document $document)
+//     {
+//         if ($document->front_image) {
+//             Storage::disk('public')->delete($document->front_image);
+//         }
+//         if ($document->back_image) {
+//             Storage::disk('public')->delete($document->back_image);
+//         }
+//     }
+// }
