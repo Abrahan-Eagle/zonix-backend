@@ -119,6 +119,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [AddressController::class, 'show']);
         Route::put('/{id}', [AddressController::class, 'update']);
         Route::delete('/{id}', [AddressController::class, 'destroy']);
+        Route::post('/getCountries', [AddressController::class, 'getCountries']);
+        Route::post('/get-states-by-country', [AddressController::class, 'getState']);
+        Route::post('/get-cities-by-state', [AddressController::class, 'getCity']);
     });
 
     // **Gestión de Asociaciones Vecinales**

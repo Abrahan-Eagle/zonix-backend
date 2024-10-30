@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use App\Models\Address;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\State;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AddressController extends Controller
@@ -61,14 +65,13 @@ class AddressController extends Controller
      */
     public function show($id)
     {
-        // Buscar la dirección por ID
-        $address = Address::with(['profile', 'city'])->find($id);
+        $addresses = Address::where('profile_id', $id)->get();
 
-        if (!$address) {
+        if ($addresses->isEmpty()) {
             return response()->json(['message' => 'Address not found'], 404);
         }
 
-        return response()->json($address);
+        return response()->json($addresses);
     }
 
     /**
@@ -132,4 +135,41 @@ class AddressController extends Controller
 
         return response()->json(['message' => 'Address deleted successfully']);
     }
+
+
+
+
+
+
+
+
+
+public function getCountries(Request $request)
+{
+    $countries = Country::get(['name', 'id']);
+    Log::info('Países recuperados: ', $countries->toArray());
+    return response()->json($countries);
+}
+
+public function getState(Request $request)
+{
+    $request->validate([
+        'countries_id' => 'required|exists:countries,id', // Validación
+    ]);
+
+    $states = State::where("countries_id", $request->countries_id)->get(["name", "id"]);
+    // return response()->json(['states' => $states]);
+    return response()->json($states);
+}
+
+public function getCity(Request $request)
+{
+    $request->validate([
+        'state_id' => 'required|exists:states,id', // Validación
+    ]);
+
+    $cities = City::where("state_id", $request->state_id)->get(["name", "id"]);
+    return response()->json($cities);
+}
+
 }

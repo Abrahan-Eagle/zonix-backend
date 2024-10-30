@@ -11,9 +11,11 @@ class City extends Model
 
     protected $table = 'cities';
 
-    protected $fillable = [ 'state_id', 'name', 'county', 'latitude', 'longitude' ];
+    protected $fillable = ['state_id', 'name', 'county', 'latitude', 'longitude'];
 
-    public function state(){
+    // Una ciudad pertenece a un estado
+    public function state()
+    {
         return $this->belongsTo(State::class);
     }
 }

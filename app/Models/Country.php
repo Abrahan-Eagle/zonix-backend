@@ -11,10 +11,11 @@ class Country extends Model
 
     protected $table = 'countries';
 
-    protected $fillable = ['name', 'short_code',];
+    protected $fillable = ['name', 'short_code'];
 
-    public function cities(){
+    // Un país tiene muchos estados
+    public function states()
+    {
         return $this->hasMany(State::class);
     }
-
 }

@@ -56,7 +56,7 @@ class DocumentController extends Controller
     {
         $document = Document::with('profile')
             ->where('profile_id', $id)
-            ->where('status', true)
+            // ->where('status', true)
             ->get();
 
         if ($document->isEmpty()) {
