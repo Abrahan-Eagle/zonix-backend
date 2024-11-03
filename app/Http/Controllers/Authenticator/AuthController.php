@@ -53,6 +53,8 @@ class AuthController extends Controller
                     'given_name' => $data['given_name'],
                     'family_name' => $data['family_name'],
                     'profile_pic' => $data['picture'],
+                    'completed_onboarding' => false, // Inicialmente false
+
                 ]
             );
 
@@ -70,6 +72,7 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'role' => $user->role,
                     'profile_pic' => $user->profile_pic,
+                    'completed_onboarding' => $user->completed_onboarding, // Incluir este campo
                 ]
             ], 200);
         } catch (\Throwable $th) {
@@ -110,6 +113,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,  // Asegúrate de que el campo 'role' exista en la tabla users
+            'completed_onboarding' => $user->completed_onboarding,
         ]);
     }
 }
