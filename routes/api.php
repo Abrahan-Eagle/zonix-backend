@@ -49,6 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['message' => 'Acceso autorizado', 'user' => $request->user()]);
     });
 
+     // **Gestión de completed_onboarding**
+    Route::prefix('onboarding')->group(function () {
+        Route::put('/{id}', [AuthController::class, 'update']);  // Actualizar perfil
+    });
+
     // **Gestión de Perfiles**
     Route::prefix('profiles')->group(function () {
         Route::get('/', [ProfileController::class, 'index']);  // Listar perfiles
