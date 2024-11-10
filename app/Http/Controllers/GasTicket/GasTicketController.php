@@ -146,9 +146,21 @@ class GasTicketController extends Controller
         // Obtener los tickets de gas asociados al perfil encontrado
         // $tickets = GasTicket::with(['user', 'gasTickets', 'gasCylinders', 'phones', 'emails', 'documents', 'addresses', 'profile', 'gasCylinder'])
 
-        $tickets = GasTicket::with(['profile', 'gasCylinder'])
-            ->where('profile_id', $profile->id)
-            ->get();
+        // $tickets = GasTicket::with(['profile', 'gasCylinder'])
+        //     ->where('profile_id', $profile->id)
+        //     ->get();
+
+
+        $tickets = GasTicket::with([
+            'profile',                       // Carga el perfil
+            'profile.user',                  // Carga el usuario a través del perfil
+            'profile.phones',                // Carga los teléfonos a través del perfil
+            'profile.emails',                // Carga los correos electrónicos a través del perfil
+            'profile.documents',             // Carga los documentos a través del perfil
+            'profile.addresses',             // Carga las direcciones a través del perfil
+            'profile.gasCylinders',          // Carga los cilindros de gas a través del perfil
+            'gasCylinder'                    // Carga el cilindro de gas directamente asociado al ticket
+        ])->where('profile_id', $profile->id)->get();
 
         if ($tickets->isEmpty()) {
             return response()->json(['message' => 'No gas tickets found'], 404);
