@@ -144,6 +144,8 @@ class GasTicketController extends Controller
         }
         // dd($profile->id);
         // Obtener los tickets de gas asociados al perfil encontrado
+        // $tickets = GasTicket::with(['user', 'gasTickets', 'gasCylinders', 'phones', 'emails', 'documents', 'addresses', 'profile', 'gasCylinder'])
+
         $tickets = GasTicket::with(['profile', 'gasCylinder'])
             ->where('profile_id', $profile->id)
             ->get();
