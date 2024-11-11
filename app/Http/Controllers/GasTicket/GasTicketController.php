@@ -119,7 +119,13 @@ class GasTicketController extends Controller
     $ticket->status = 'pending';
 
     // Generar un código QR para el ticket
-    $ticket->qr_code = $this->generateQRCode();
+    $gasCylinder = GasCylinder::where('profile_id', $request->profile_id)->first();
+    if ($gasCylinder) {
+        $ticket->qr_code = $gasCylinder->gas_cylinder_code;
+    } else {
+        return response()->json(['error' => 'Gas cylinder not found for the given profile ID'], 400);
+    }
+
 
     // Guardar el ticket en la base de datos
     $ticket->save();
