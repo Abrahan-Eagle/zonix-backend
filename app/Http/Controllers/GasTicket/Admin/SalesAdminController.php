@@ -91,7 +91,11 @@ class SalesAdminController extends Controller
             return response()->json(['message' => 'No gas tickets found'], 404);
         }
 
-        return response()->json($tickets);
+        return response()->json([
+            'success' => true,
+            'data' => $tickets,
+            'message' => 'Ticket'
+        ]);
     }
 
 

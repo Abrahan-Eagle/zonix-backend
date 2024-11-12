@@ -45,9 +45,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('sales-admin')->group(function () {
         Route::post('/tickets/{id}/verify', [SalesAdminController::class, 'verifyTicket']);
         Route::post('/tickets/{id}/waiting', [SalesAdminController::class, 'markAsWaiting']);
+        Route::post('/tickets/{id}/cancel', [SalesAdminController::class, 'cancelTicket']);
+    });
+
+    Route::prefix('dispatch')->group(function () {
         Route::post('/tickets/{qrCodeId}/qr-code', [SalesAdminController::class, 'qrCode']);
         Route::post('/tickets/{id}/dispatch', [SalesAdminController::class, 'dispatchTicket']);
-        Route::post('/tickets/{id}/cancel', [SalesAdminController::class, 'cancelTicket']);
     });
 
     Route::prefix('tickets')->group(function () {
