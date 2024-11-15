@@ -39,7 +39,7 @@ jobs:
         echo "${{ secrets.ENV_CONTENT }}" > .env
         cat .env # Para verificar si se está configurando correctamente el .env
 
-    # Paso 5: Configurar permisos de directorio
+    # Paso 5: Configurar permisos de directoriox
     - name: Set directory permissions
       run: chmod -R 775 storage bootstrap/cache
 
