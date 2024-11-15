@@ -29,7 +29,9 @@ jobs:
       # Paso 4: Copiar el archivo .env desde los Secrets
       - name: Setup environment file
         run: |
+          echo "Setting up .env from secrets..."
           echo "${{ secrets.ENV_CONTENT }}" > .env
+          cat .env # Para verificar si se está configurando correctamente el .env
 
       # Paso 5: Configurar permisos de directorio
       - name: Set directory permissions
@@ -84,20 +86,24 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./   # Ruta correcta en el directorio local (dependiendo de tu estructura de proyecto)
-          server-dir: ./zonix.uniblockweb.com/sub # Ruta de destino en el servidor FTP
+          local-dir: ${{ secrets.LOCAL_DIR }}     # Ruta correcta en el directorio local
+          server-dir: ${{ secrets.SERVER_DIR }}   # Ruta de destino en el servidor FTP
 
-      # Paso 11: Ejecutar migraciones en el servidor (Sin SSH, se recomienda manual o cron job)
-      - name: Run database migrations (via FTP or script)
+      # Paso 11: Ejecutar migraciones en el servidor (Sin SSH, automatización por script)
+      - name: Run database migrations on production (via FTP or script)
         run: |
-          echo "Consider running migrations manually or setting up a cron job on the server to automate this task."
+          echo "Running migrations manually or via a cron job. Make sure this step is automated on the server if needed."
+          # Si tienes un script en tu servidor, podrías moverlo por FTP y ejecutarlo después:
+          # curl http://yourserver.com/path-to-script/migrate.php
 
-      # Paso 12: Ejecutar seeders en el servidor (Sin SSH, con un enfoque manual o automatizado en el servidor)
+      # Paso 12: Ejecutar seeders en el servidor (Sin SSH, automatización por script)
       - name: Run seeders on production (via FTP or script)
         run: |
-          echo "Consider running seeders manually or setting up a cron job on the server to automate this task."
+          echo "Running seeders manually or via a cron job. Make sure this step is automated on the server if needed."
+          # Puedes correr un script para hacer esto de manera automatizada.
 
       # Paso 13: Limpiar cachés en el servidor (Sin SSH)
       - name: Clear caches (via FTP or script)
         run: |
-          echo "Consider running cache clear commands manually or setting up a cron job on the server to automate this task."
+          echo "Clearing cache manually or via a cron job on the server."
+          # También puedes mover un script para ejecutar el cache: php artisan cache:clear
