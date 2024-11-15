@@ -23,8 +23,8 @@ jobs:
           ini-values: post_max_size=256M, upload_max_filesize=256M, max_execution_time=300
 
       # Paso 3: Instalar dependencias
-      - name: Install dependencies
-        run: composer install --no-dev --prefer-dist --optimize-autoloader
+      - name: Install PHP dependencies
+        run: composer install --no-dev --optimize-autoloader
 
       # Paso 4: Copiar el archivo .env desde los Secrets
       - name: Setup environment file
