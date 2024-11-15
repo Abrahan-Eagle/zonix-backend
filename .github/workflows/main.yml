@@ -51,6 +51,15 @@ jobs:
     - name: Set directory permissions
       run: chmod -R 775 storage bootstrap/cache
 
+    # Paso 6: Configurar MySQL para pruebas (si necesario)
+    - name: Setup MySQL for testing (optional, can be removed)
+      uses: mirromutth/mysql-action@v1
+      with:
+        mysql-version: '8.0'
+        username: unibicuo_xionix
+        password: "#$AIpp/19217553/"
+        database: unibicuo_xionix
+
 
 
 
