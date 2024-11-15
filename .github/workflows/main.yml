@@ -1,41 +1,105 @@
-name: Laravel CI/CD Pipeline
-
+name: Publish Website to CPanel
 on:
   push:
     branches:
       - main
-
 jobs:
-  build-and-deploy:
+  FTP-Deploy-Action:
+    name: FTP-Deploy-Action
     runs-on: ubuntu-latest
-
     steps:
-      # Paso 1: Clonar el repositorio
-      - name: Checkout repository
-        uses: actions/checkout@v2  # Usar una versión estable
+    # Paso 1: Clonar el repositorio
+    - name: Checkout repository
+    - uses: actions/checkout@v2.1.0
+      with:
+        fetch-depth: 2
+    - name: Build assets
+      run: npm install && npm run build
 
-      # Paso 2: Configurar PHP
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.1
-          extensions: mbstring, bcmath, intl, pdo, mysql
-          ini-values: post_max_size=256M, upload_max_filesize=256M, max_execution_time=300
+    - name: Install PHP and Composer
+      uses: shivammathur/setup-php@v2
+      with:
+          php-version: '8.2' # Adjust to match the PHP version used by your Laravel project
+          tools: 'composer'
 
-      # Paso 3: Instalar dependencias
-      - name: Install PHP dependencies
-        run: composer install --no-dev --optimize-autoloader
+    - name: Install PHP dependencies
+      run: composer install --no-dev --optimize-autoloader
+
+    - name: FTP-Deploy-Action
+      uses: SamKirkland/FTP-Deploy-Action@4.3.3
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+
+    # Paso 4: Copiar el archivo .env desde los Secrets
+    - name: Setup environment file
+      run: |
+        echo "Setting up .env from secrets..."
+        echo "${{ secrets.ENV_CONTENT }}" > .env
+        cat .env # Para verificar si se está configurando correctamente el .env
+
+    # Paso 5: Configurar permisos de directorio
+    - name: Set directory permissions
+      run: chmod -R 775 storage bootstrap/cache
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# name: Laravel CI/CD Pipeline
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # Paso 1: Clonar el repositorio
+#       - name: Checkout repository
+#         uses: actions/checkout@v2  # Usar una versión estable
+
+#       # Paso 2: Configurar PHP
+#       - name: Setup PHP
+#         uses: shivammathur/setup-php@v2
+#         with:
+#           php-version: 8.1
+#           extensions: mbstring, bcmath, intl, pdo, mysql
+#           ini-values: post_max_size=256M, upload_max_filesize=256M, max_execution_time=300
+
+#       # Paso 3: Instalar dependencias
+#       - name: Install dependencies
+#         run: composer install --no-dev --prefer-dist --optimize-autoloader
 
       # Paso 4: Copiar el archivo .env desde los Secrets
-      - name: Setup environment file
-        run: |
-          echo "Setting up .env from secrets..."
-          echo "${{ secrets.ENV_CONTENT }}" > .env
-          cat .env # Para verificar si se está configurando correctamente el .env
+      # - name: Setup environment file
+      #   run: |
+      #     echo "Setting up .env from secrets..."
+      #     echo "${{ secrets.ENV_CONTENT }}" > .env
+      #     cat .env # Para verificar si se está configurando correctamente el .env
 
-      # Paso 5: Configurar permisos de directorio
-      - name: Set directory permissions
-        run: chmod -R 775 storage bootstrap/cache
+      # # Paso 5: Configurar permisos de directorio
+      # - name: Set directory permissions
+      #   run: chmod -R 775 storage bootstrap/cache
 
       # # Paso 6: Configurar MySQL para pruebas (si necesario)
       # - name: Setup MySQL for testing (optional, can be removed)
@@ -69,12 +133,12 @@ jobs:
       #   run: php artisan db:seed --force
 
       # Paso 9: Desplegar al servidor mediante FTP
-      - name: Deploy to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+      # - name: Deploy to FTP
+      #   uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      #   with:
+      #     server: ${{ secrets.FTP_SERVER }}
+      #     username: ${{ secrets.FTP_USERNAME }}
+      #     password: ${{ secrets.FTP_PASSWORD }}
 
       # # Paso 10: Ejecutar migraciones en el servidor (Sin SSH, automatización por script)
       # - name: Run database migrations on production (via FTP or script)
@@ -94,41 +158,6 @@ jobs:
       #   run: |
       #     echo "Clearing cache manually or via a cron job on the server."
       #     # También puedes mover un script para ejecutar el cache: php artisan cache:clear
-
-
-
-# name: Publish Website to CPanel
-# on:
-#   push:
-#     branches:
-#       - main
-# jobs:
-#   FTP-Deploy-Action:
-#     name: FTP-Deploy-Action
-#     runs-on: ubuntu-latest
-#     steps:
-#     - uses: actions/checkout@v2.1.0
-#       with:
-#         fetch-depth: 2
-#     - name: Build assets
-#       run: npm install && npm run build
-
-#     - name: Install PHP and Composer
-#       uses: shivammathur/setup-php@v2
-#       with:
-#           php-version: '8.2' # Adjust to match the PHP version used by your Laravel project
-#           tools: 'composer'
-
-#     - name: Install PHP dependencies
-#       run: composer install --no-dev --optimize-autoloader
-
-#     - name: FTP-Deploy-Action
-#       uses: SamKirkland/FTP-Deploy-Action@4.3.3
-#       with:
-#         server: ${{ secrets.FTP_SERVER }}
-#         username: ${{ secrets.FTP_USERNAME }}
-#         password: ${{ secrets.FTP_PASSWORD }}
-
 
 
 
