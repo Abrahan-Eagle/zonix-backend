@@ -37,36 +37,36 @@ jobs:
       - name: Set directory permissions
         run: chmod -R 775 storage bootstrap/cache
 
-      # Paso 6: Configurar MySQL para pruebas (si necesario)
-      - name: Setup MySQL for testing (optional, can be removed)
-        uses: mirromutth/mysql-action@v1
-        with:
-          mysql-version: '8.0'
-          username: unibicuo_xionix
-          password: "#$AIpp/19217553/"
-          database: unibicuo_xionix
+      # # Paso 6: Configurar MySQL para pruebas (si necesario)
+      # - name: Setup MySQL for testing (optional, can be removed)
+      #   uses: mirromutth/mysql-action@v1
+      #   with:
+      #     mysql-version: '8.0'
+      #     username: unibicuo_xionix
+      #     password: "#$AIpp/19217553/"
+      #     database: unibicuo_xionix
 
-      # Paso 7: Ejecutar migraciones en producción
-      - name: Run migrations (production)
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: unibicuo_xionix
-          DB_USERNAME: unibicuo_xionix
-          DB_PASSWORD: "#$AIpp/19217553/"
-        run: php artisan migrate --force
+      # # Paso 7: Ejecutar migraciones en producción
+      # - name: Run migrations (production)
+      #   env:
+      #     DB_CONNECTION: mysql
+      #     DB_HOST: 127.0.0.1
+      #     DB_PORT: 3306
+      #     DB_DATABASE: unibicuo_xionix
+      #     DB_USERNAME: unibicuo_xionix
+      #     DB_PASSWORD: "#$AIpp/19217553/"
+      #   run: php artisan migrate --force
 
-      # Paso 8: Ejecutar seeders en producción
-      - name: Run seeders (production)
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: unibicuo_xionix
-          DB_USERNAME: unibicuo_xionix
-          DB_PASSWORD: "#$AIpp/19217553/"
-        run: php artisan db:seed --force
+      # # Paso 8: Ejecutar seeders en producción
+      # - name: Run seeders (production)
+      #   env:
+      #     DB_CONNECTION: mysql
+      #     DB_HOST: 127.0.0.1
+      #     DB_PORT: 3306
+      #     DB_DATABASE: unibicuo_xionix
+      #     DB_USERNAME: unibicuo_xionix
+      #     DB_PASSWORD: "#$AIpp/19217553/"
+      #   run: php artisan db:seed --force
 
       # Paso 9: Desplegar al servidor mediante FTP
       - name: Deploy to FTP
