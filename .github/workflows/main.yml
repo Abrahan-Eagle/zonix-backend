@@ -1,0 +1,103 @@
+name: Laravel CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Paso 1: Clonar el repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Paso 2: Configurar PHP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          extensions: mbstring, bcmath, intl, pdo, mysql
+          ini-values: post_max_size=256M, upload_max_filesize=256M, max_execution_time=300
+
+      # Paso 3: Instalar dependencias
+      - name: Install dependencies
+        run: composer install --no-dev --prefer-dist --optimize-autoloader
+
+      # Paso 4: Copiar el archivo .env desde los Secrets
+      - name: Setup environment file
+        run: |
+          echo "${{ secrets.ENV_CONTENT }}" > .env
+
+      # Paso 5: Configurar permisos de directorio
+      - name: Set directory permissions
+        run: chmod -R 775 storage bootstrap/cache
+
+      # Paso 6: Configurar MySQL para pruebas locales
+      - name: Setup MySQL for testing
+        uses: mirromutth/mysql-action@v1
+        with:
+          mysql-version: '8.0'
+          username: root
+          password: root
+          database: laravel_test
+
+      # Paso 7: Ejecutar migraciones en local
+      - name: Run migrations (local)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan migrate --force
+
+      # Paso 8: Ejecutar seeders en local
+      - name: Run seeders (local)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan db:seed --force
+
+      # Paso 9: Ejecutar pruebas en local
+      - name: Run tests (local)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan test
+
+      # Paso 10: Desplegar al servidor mediante FTP
+      - name: Deploy to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./   # Ruta correcta en el directorio local (dependiendo de tu estructura de proyecto)
+          server-dir: /   # Ruta de destino en el servidor FTP
+
+      # Paso 11: Ejecutar migraciones en el servidor (Sin SSH, se recomienda manual o cron job)
+      - name: Run database migrations (via FTP or script)
+        run: |
+          echo "Consider running migrations manually or setting up a cron job on the server to automate this task."
+
+      # Paso 12: Ejecutar seeders en el servidor (Sin SSH, con un enfoque manual o automatizado en el servidor)
+      - name: Run seeders on production (via FTP or script)
+        run: |
+          echo "Consider running seeders manually or setting up a cron job on the server to automate this task."
+
+      # Paso 13: Limpiar cachés en el servidor (Sin SSH)
+      - name: Clear caches (via FTP or script)
+        run: |
+          echo "Consider running cache clear commands manually or setting up a cron job on the server to automate this task."
