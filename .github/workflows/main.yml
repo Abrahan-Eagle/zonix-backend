@@ -50,7 +50,7 @@ jobs:
     - name: Debug .env file
       run: cat .env
 
-    - name: Ensure MySQL is running
+    - name: Ensure MySQL is runningx
       run: mysql -h 127.0.0.1 -u ${{ secrets.DB_USERNAME }} -p'${{ secrets.DB_PASSWORD }}' ${{ secrets.DB_DATABASE }} -e "SHOW TABLES"
 # run: mysql -h 127.0.0.1 -u ${{ secrets.DB_USERNAME }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_DATABASE }} -e "SHOW TABLES"
     - name: Enable Laravel debug
