@@ -38,8 +38,9 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ../../
 
+      - name: Debug the secret content
+        run: echo "${{ secrets.ENV_CONTENT }}"
 
       # Paso 6: Configurar el archivo .env desde los secretos
       - name: Setup environment file

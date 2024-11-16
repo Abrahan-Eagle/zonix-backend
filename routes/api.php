@@ -15,6 +15,11 @@ use App\Http\Controllers\Profiles\ProfileController;
 use App\Http\Controllers\GasTicket\Admin\SalesAdminController;
 use Illuminate\Support\Facades\Artisan;
 
+Route::get('/env-test', function () {
+    dd(env('APP_NAME'), env('DB_DATABASE'), env('APP_DEBUG'));
+});
+
+
 Route::get('/migrate-refresh', function () {
     Artisan::call('migrate:refresh', ['--seed' => true]);
     return 'Database migration refreshed and seeded successfully!';
