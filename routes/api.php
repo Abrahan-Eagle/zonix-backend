@@ -13,6 +13,13 @@ use App\Http\Controllers\Profiles\DocumentController;
 use App\Http\Controllers\Profiles\NeighborhoodAssociationController;
 use App\Http\Controllers\Profiles\ProfileController;
 use App\Http\Controllers\GasTicket\Admin\SalesAdminController;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/migrate-refresh', function () {
+    Artisan::call('migrate:refresh', ['--seed' => true]);
+    return 'Database migration refreshed and seeded successfully!';
+});
+
 
 Route::prefix('auth')->group(function () {
     Route::post('/google', [AuthController::class, 'googleUser']);
