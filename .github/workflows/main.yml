@@ -51,9 +51,9 @@ jobs:
       run: cat .env
 
     - name: Ensure MySQL is runnings
-      run: mysql -h zonix.uniblockweb.com -u unibicuo_xionix -p'#$AIpp/19217553/' unibicuo_xionix -e "SHOW TABLES" --verbose
+      run: mysql -h 127.0.0.1 -uunibicuo_xionix -p'#$AIpp/19217553/' unibicuo_xionix -e "SHOW TABLES" --verbose
       # run: mysql -h localhost -u ${{ secrets.DB_USERNAME }} -p'${{ secrets.DB_PASSWORD }}' ${{ secrets.DB_DATABASE }} -e "SHOW TABLES"
-      # run: mysql -h 127.0.0.1 -u ${{ secrets.DB_USERNAME }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_DATABASE }} -e "SHOW TABLES"
+      # run: mysql -h  -u ${{ secrets.DB_USERNAME }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_DATABASE }} -e "SHOW TABLES"
 
     - name: Enable Laravel debug
       run: |
