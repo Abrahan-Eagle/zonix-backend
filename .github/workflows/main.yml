@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      # Paso 2: Instalar dependencias de Node.js y compilar activos
+      # Paso 2: Instalar dependencias de Node.js  y compilar activos
       - name: Build assets
         run: npm install && npm run build
 
