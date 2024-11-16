@@ -69,3 +69,4 @@ jobs:
       - name: Test .env variables
         run: |
           curl https://zonix.uniblockweb.com/api/env-test
+

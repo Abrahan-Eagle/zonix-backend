@@ -22,8 +22,8 @@ return new class extends Migration
         });
 
         Schema::create('job_batches', function (Blueprint $table) {
-            $table->string('id', 191)->primary(); // Limit 'id' to 191 characters
-            $table->string('name', 191);           // Limit 'name' to 191 characters
+            $table->string('id')->primary();
+            $table->string('name');
             $table->integer('total_jobs');
             $table->integer('pending_jobs');
             $table->integer('failed_jobs');
