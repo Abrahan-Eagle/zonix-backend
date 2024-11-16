@@ -29,7 +29,7 @@ jobs:
 
     # Paso 4: Instalar dependencias PHP
     - name: Install PHP dependencies
-      run: composer install --no-dev --optimize-autoloader
+      run: composer install --optimize-autoloader
 
     # Paso 5: Desplegar archivos por FTP
     - name: FTP-Deploy-Action
@@ -63,21 +63,63 @@ jobs:
         database: ${{ secrets.DB_DATABASE }}
 
     # Paso 8: Ejecutar migraciones y seed en producción
-    - name: Run migrations and seed database (production)
+    - name: Run migrations and seed database
       env:
         DB_CONNECTION: mysql
-        DB_HOST: ${{ secrets.DB_HOST }}  # Usar el valor de secreto para el host de la base de datos
+        DB_HOST: ${{ secrets.DB_HOST }}
         DB_PORT: 3306
         DB_DATABASE: ${{ secrets.DB_DATABASE }}
-        DB_USERNAME: ${{ secrets.DB_PASSWORD }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}  # Usar un secreto de GitHub para la contraseña
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
-        php artisan migrate --force || true  # Si la migración falla, evita que se detenga el proceso
-        php artisan db:seed --force || true   # Lo mismo para el seed
+        php artisan migrate --force
+        php artisan db:seed --force
 
 
 
 
+# name: Publish Website to CPanel
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   FTP-Deploy-Action:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout repository
+#       uses: actions/checkout@v3
+
+#     - name: Install PHP and Composer
+#       uses: shivammathur/setup-php@v2
+#       with:
+#         php-version: '8.2'
+#         tools: composer
+
+#     - name: Install PHP dependencies
+#       run: composer install --optimize-autoloader
+
+#     - name: Setup environment file
+#       run: echo "${{ secrets.ENV_CONTENT }}" > .env
+
+#     - name: Debug environment variables
+#       run: |
+#         echo "DB_HOST=${{ secrets.DB_HOST }}"
+#         echo "DB_DATABASE=${{ secrets.DB_DATABASE }}"
+
+#     - name: Run migrations and seed database
+#       env:
+#         DB_CONNECTION: mysql
+#         DB_HOST: ${{ secrets.DB_HOST }}
+#         DB_PORT: 3306
+#         DB_DATABASE: ${{ secrets.DB_DATABASE }}
+#         DB_USERNAME: ${{ secrets.DB_USERNAME }}
+#         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+#       run: |
+#         php artisan migrate --force
+#         php artisan db:seed --force
 
 
 
