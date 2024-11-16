@@ -71,7 +71,16 @@ jobs:
       - name: Set directory permissions
         run: chmod -R 775 storage bootstrap/cache
 
-      # Paso 9: Configurar MySQL para pruebas (si necesario)
+      # Paso 9: Esperar a que MySQL esté disponible
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          until mysqladmin ping --host=127.0.0.1 --port=3306 --user=root --password=${{ secrets.DB_PASSWORD }} --silent; do
+            echo "MySQL is not ready, waiting..."
+            sleep 5
+          done
+
+      # Paso 10: Ejecutar migraciones y semillas en la base de datos
       - name: Run migrations and seed the database
         run: |
           php artisan migrate --force
@@ -80,19 +89,20 @@ jobs:
           DB_CONNECTION: mysql
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
           DB_PORT: 3306
-          DB_USER: root
+          DB_HOST: 127.0.0.1
+          DB_USERNAME: root
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
-      # Paso 10: Ejecutar pruebas de PHPUnit
+      # Paso 11: Ejecutar pruebas de PHPUnit
       - name: Run PHPUnit tests
         run: vendor/bin/phpunit --testdox
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
           DB_PORT: 3306
-          DB_USER: root
+          DB_HOST: 127.0.0.1
+          DB_USERNAME: root
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-
 
 
 
