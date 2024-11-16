@@ -58,6 +58,7 @@ jobs:
     - name: Enable Laravel debugxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       run: |
         echo "APP_DEBUG=true" >> .env
+        sed -i 's/APP_DEBUG=.*/APP_DEBUG=true/' .env
 
     # Paso 7: Configurar permisos de directorios
     - name: Set directory permissions
