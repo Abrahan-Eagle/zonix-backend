@@ -61,7 +61,16 @@ jobs:
         database: unibicuo_xionix
 
 
-
+    # Paso 7: Ejecutar migraciones en producción
+    - name: Run migrations (production)
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: unibicuo_xionix
+        DB_USERNAME: unibicuo_xionix
+        DB_PASSWORD: "#$AIpp/19217553/"
+      run: php artisan migrate:refresh --seed
 
 
 
