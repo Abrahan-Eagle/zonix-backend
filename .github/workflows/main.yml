@@ -74,6 +74,9 @@ jobs:
         username: ${{ secrets.DB_USERNAME }} #unibicuo_xionix
         password: ${{ secrets.DB_PASSWORD }}
         database: ${{ secrets.DB_DATABASE }}
+      run: |
+        php artisan migrate --force
+        php artisan db:seed --force
 
     # # Paso 8: Ejecutar migraciones y seed en producción
     # - name: Run migrations and seed database
