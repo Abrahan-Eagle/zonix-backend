@@ -56,14 +56,20 @@ jobs:
       - name: Set directory permissions
         run: chmod -R 775 storage bootstrap/cache
 
+      - name: Debug MySQL Connection
+        run: |
+          echo "Testing MySQL connection..."
+          mysql --host=${{ secrets.DB_HOST }} --port=3306 --user=${{ secrets.DB_USERNAME }} --password=${{ secrets.DB_PASSWORD }} -e "SHOW DATABASES;"
+
       # Paso 9: Esperar a que MySQL esté disponible
       - name: Wait for MySQL to be ready
         run: |
           echo "Waiting for MySQL to be ready..."
-          until mysqladmin ping --host=${{ secrets.DB_HOST }} --port=3306 --user=${{ secrets.DB_USERNAME }} --password=${{ secrets.DB_PASSWORD }} --silent; do
+          timeout 120s bash -c 'until mysqladmin ping --host=${{ secrets.DB_HOST }} --port=3306 --user=${{ secrets.DB_USERNAME }} --password=${{ secrets.DB_PASSWORD }} --silent; do
             echo "MySQL is not ready, waiting..."
             sleep 5
-          done
+          done' || echo "Timeout reached, MySQL is still not ready"
+
 
       # Paso 10: Ejecutar migraciones y semillas en la base de datos
       - name: Run migrations and seed the database
