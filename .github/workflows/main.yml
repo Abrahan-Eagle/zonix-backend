@@ -47,6 +47,16 @@ jobs:
         # Puedes quitar este cat para evitar exponer el contenido del archivo en los logs
         cat .env
 
+    - name: Debug .env file
+      run: cat .env
+
+    - name: Ensure MySQL is running
+      run: mysqladmin -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USERNAME }} -p${{ secrets.DB_PASSWORD }} ping
+
+    - name: Enable Laravel debug
+      run: |
+        echo "APP_DEBUG=true" >> .env
+
     # Paso 7: Configurar permisos de directorios
     - name: Set directory permissions
       run: chmod -R 775 storage bootstrap/cache
