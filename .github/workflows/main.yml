@@ -50,6 +50,8 @@ jobs:
     # Paso 7: Configurar permisos de directorios
     - name: Set directory permissions
       run: chmod -R 775 storage bootstrap/cache
+      # Si es necesario, también puedes configurar la propiedad con chown (opcional)
+      # sudo chown -R www-data:www-data storage bootstrap/cache
 
     # Paso 6: Configurar MySQL para pruebas (si necesario)
     - name: Setup MySQL for testing (optional, can be removed)
@@ -60,8 +62,7 @@ jobs:
         password: "#$AIpp/19217553/"
         database: unibicuo_xionix
 
-
-    # Paso 7: Ejecutar migraciones en producción
+    # Paso 8: Ejecutar migraciones en producción (sin refrescar, solo aplicar migraciones)
     - name: Run migrations (production)
       env:
         DB_CONNECTION: mysql
@@ -69,10 +70,82 @@ jobs:
         DB_PORT: 3306
         DB_DATABASE: unibicuo_xionix
         DB_USERNAME: unibicuo_xionix
-        DB_PASSWORD: "#$AIpp/19217553/"
-      run: php artisan migrate:refresh --seed
+        DB_PASSWORD: "#$AIpp/19217553/" #"${{ secrets.DB_PASSWORD }}" # Considera mover la contraseña a un secreto de GitHub
+      run: php artisan migrate --force
 
 
+
+
+
+
+
+
+# name: Publish Website to CPanel
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   FTP-Deploy-Action:
+#     name: FTP-Deploy-Action
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     # Paso 1: Clonar el repositorio
+#     - name: Checkout repository
+#       uses: actions/checkout@v3
+#       with:
+#         fetch-depth: 2
+
+#     # Paso 2: Instalar dependencias de Node.js y compilar activos
+#     - name: Build assets
+#       run: npm install && npm run build
+
+#     # Paso 3: Instalar PHP y Composer
+#     - name: Install PHP and Composer
+#       uses: shivammathur/setup-php@v2
+#       with:
+#         php-version: '8.2' # Ajusta a la versión de PHP usada en tu proyecto Laravel
+#         tools: 'composer'
+
+#     # Paso 4: Instalar dependencias PHP
+#     - name: Install PHP dependencies
+#       run: composer install --no-dev --optimize-autoloader
+
+#     # Paso 5: Desplegar archivos por FTP
+#     - name: FTP-Deploy-Action
+#       uses: SamKirkland/FTP-Deploy-Action@4.3.3
+#       with:
+#         server: ${{ secrets.FTP_SERVER }}
+#         username: ${{ secrets.FTP_USERNAME }}
+#         password: ${{ secrets.FTP_PASSWORD }}
+
+#     # Paso 6: Configurar el archivo .env desde los secretos
+#     - name: Setup environment file
+#       run: |
+#         echo "Setting up .env from secrets..."
+#         echo "${{ secrets.ENV_CONTENT }}" > .env
+#         # Puedes quitar este cat para evitar exponer el contenido del archivo en los logs
+#         cat .env
+
+#     # Paso 7: Configurar permisos de directorios
+#     - name: Set directory permissions
+#       run: |
+#         chmod -R 775 storage bootstrap/cache
+#         # Si es necesario, también puedes configurar la propiedad con chown (opcional)
+#         # sudo chown -R www-data:www-data storage bootstrap/cache
+
+    # # Paso 8: Ejecutar migraciones en producción (sin refrescar, solo aplicar migraciones)
+    # - name: Run migrations (production)
+    #   env:
+    #     DB_CONNECTION: mysql
+    #     DB_HOST: 127.0.0.1
+    #     DB_PORT: 3306
+    #     DB_DATABASE: unibicuo_xionix
+    #     DB_USERNAME: unibicuo_xionix
+    #     DB_PASSWORD: "${{ secrets.DB_PASSWORD }}" # Considera mover la contraseña a un secreto de GitHub
+    #   run: php artisan migrate --force
 
 
 
