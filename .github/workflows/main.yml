@@ -70,6 +70,7 @@ jobs:
           php artisan config:clear
           php artisan cache:clear
           php artisan config:cache
+          php artisan storage:link
 
       # Paso 11: Verificar las variables de entorno en Laravel (opcional)
       - name: Test .env variables
