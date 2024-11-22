@@ -26,7 +26,7 @@ class NeighborhoodAssociationController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'urbanization_name' => 'required|string|max:255',
-            'neighborhood_proof_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'neighborhood_proof_photo' => 'nullable|image|mimes:jpg,jpeg,png',
             'approved' => 'boolean',
             'profile_id' => 'required|exists:profiles,id',
         ]);
@@ -76,7 +76,7 @@ class NeighborhoodAssociationController extends Controller
 
         $validator = Validator::make($request->all(), [
             'urbanization_name' => 'string|max:255',
-            'neighborhood_proof_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'neighborhood_proof_photo' => 'nullable|image|mimes:jpg,jpeg,png',
             'approved' => 'boolean',
         ]);
 

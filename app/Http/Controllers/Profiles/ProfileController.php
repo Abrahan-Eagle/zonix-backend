@@ -33,7 +33,7 @@ class ProfileController extends Controller
             'middleName' => 'nullable|string|max:255',
             'lastName' => 'required|string|max:255',
             'secondLastName' => 'nullable|string|max:255',
-            'photo_users' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo_users' => 'nullable|image|mimes:jpeg,png,jpg',
             'date_of_birth' => 'required|date',
             'maritalStatus' => 'required|in:married,divorced,single',
             'sex' => 'required|in:F,M',
@@ -99,7 +99,7 @@ class ProfileController extends Controller
             'date_of_birth' => 'required|date',
             'maritalStatus' => 'required|string|in:married,divorced,single',
             'sex' => 'required|in:M,F',
-            'photo_users' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'photo_users' => 'nullable|image|mimes:jpeg,png,jpg',
         ]);
 
             // Obtener el nombre del perfil y la fecha de creación

@@ -29,7 +29,7 @@ class GasCylinderController extends Controller
             'cylinder_type' => 'required|in:small,wide',
             'cylinder_weight' => 'required|in:10kg,18kg,45kg',
             'manufacturing_date' => 'required|date',
-            'photo_gas_cylinder' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'photo_gas_cylinder' => 'required|image|mimes:jpeg,png,jpg',
             'company_supplier_id' => 'required|exists:gas_suppliers,id', // Clave foránea a la tabla de proveedores de gas
         ]);
 
