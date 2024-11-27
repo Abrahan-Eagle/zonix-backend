@@ -43,11 +43,29 @@ class ProfileController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
+                // Verificar si ya existe un perfil para el usuario.
+        $existingProfile = Profile::where('user_id', $request->user_id)->first();
+
+        if ($existingProfile) {
+            return response()->json([
+                'message' => 'Ya existe un perfil asociado a este usuario.',
+                'profile' => $existingProfile
+            ], 409); // Código de estado HTTP 409: Conflicto
+        }
+
         // Preparar los datos para la creación del perfil.
+        // $profileData = $request->only([
+        //     'user_id', 'firstName', 'middleName', 'lastName', 'secondLastName',
+        //     'date_of_birth', 'maritalStatus', 'sex'
+        // ]);
+
         $profileData = $request->only([
-            'user_id', 'firstName', 'middleName', 'lastName', 'secondLastName',
-            'date_of_birth', 'maritalStatus', 'sex'
+            'user_id', 'firstName', 'lastName', 'date_of_birth', 'maritalStatus', 'sex'
         ]);
+
+          // Establecer valores predeterminados para campos opcionales.
+        $profileData['middleName'] = $request->middleName ?? '';
+        $profileData['secondLastName'] = $request->secondLastName ?? '';
         $profileData['status'] = 'notverified'; // Estado inicial.
 
         // Manejar la carga de la imagen.
@@ -85,68 +103,143 @@ class ProfileController extends Controller
         return response()->json($profile);
     }
 
+    // public function update(Request $request, $id)
+    // {
+    //     // Buscar el perfil por ID o devolver error 404.
+    //     $profile = Profile::findOrFail($id);
+
+    //     // Validar los datos recibidos.
+    //     $validatedData = $request->validate([
+    //         'firstName' => 'required|string|max:255',
+    //         'middleName' => 'string|max:255',
+    //         'lastName' => 'required|string|max:255',
+    //         'secondLastName' => 'string|max:255',
+    //         'date_of_birth' => 'required|date',
+    //         'maritalStatus' => 'required|string|in:married,divorced,single',
+    //         'sex' => 'required|in:M,F',
+    //         'photo_users' => 'nullable|image|mimes:jpeg,png,jpg',
+    //     ]);
+
+    //         // Obtener el nombre del perfil y la fecha de creación
+    //     $created_at = $profile->created_at->format('YmdHis'); // Formato de fecha
+    //     $date_of_birth = Carbon::parse($validatedData['date_of_birth'])->format('Ymd'); // Formato de fecha de nacimiento
+    //     $firstName = $validatedData['firstName'];
+    //     $lastName = $validatedData['lastName'];
+    //     $randomDigits = strtoupper(substr(md5(mt_rand()), 0, 7)); // Generar 7 caracteres aleatorios
+
+    //     // Crear el nuevo nombre de la imagen
+    //     $newImageName = "photo_users-{$created_at}-{$date_of_birth}-{$firstName}-{$lastName}-{$randomDigits}.jpg";
+
+
+    //     $photo_usersxxx = $profile->photo_users;
+
+    //     // Actualizar los campos del perfil.
+    //     $profile->fill($validatedData);
+
+    //     // Obtener la URL base según el entorno.
+    //     $baseUrl = env('APP_ENV') === 'production'
+    //         ? env('APP_URL_PRODUCTION')
+    //         : env('APP_URL_LOCAL');
+
+    //     // Manejo del archivo (si se sube uno nuevo).
+    //     if ($request->hasFile('photo_users')) {
+    //         // Eliminar la imagen anterior si existe.
+    //         if ($profile->photo_users) {
+    //             // Log de la imagen anterior desde la base de datos
+    //             Storage::disk('public')->delete(str_replace($baseUrl . '/storage/', '', $photo_usersxxx));
+    //         } else {
+    //             Log::info('No hay imagen anterior para eliminar.');
+    //         }
+
+    //         // Guardar la nueva imagen en el disco público.
+    //         $path = $request->file('photo_users')->storeAs('profile_images', $newImageName, 'public');
+    //         $profile->photo_users = $baseUrl . '/storage/' . $path;
+    //     }
+
+    //     // Guardar los cambios.
+    //     $profile->save();
+
+    //     return response()->json([
+    //         'message' => 'Perfil actualizado exitosamente.',
+    //         'profile' => $profile,
+    //         'isSuccess' => true
+    //     ], 200);
+    // }
+
+
     public function update(Request $request, $id)
-    {
-        // Buscar el perfil por ID o devolver error 404.
-        $profile = Profile::findOrFail($id);
+{
+    // Buscar el perfil por ID o devolver error 404.
+    $profile = Profile::findOrFail($id);
 
-        // Validar los datos recibidos.
-        $validatedData = $request->validate([
-            'firstName' => 'required|string|max:255',
-            'middleName' => 'nullable|string|max:255',
-            'lastName' => 'required|string|max:255',
-            'secondLastName' => 'nullable|string|max:255',
-            'date_of_birth' => 'required|date',
-            'maritalStatus' => 'required|string|in:married,divorced,single',
-            'sex' => 'required|in:M,F',
-            'photo_users' => 'nullable|image|mimes:jpeg,png,jpg',
-        ]);
-
-            // Obtener el nombre del perfil y la fecha de creación
-        $created_at = $profile->created_at->format('YmdHis'); // Formato de fecha
-        $date_of_birth = Carbon::parse($validatedData['date_of_birth'])->format('Ymd'); // Formato de fecha de nacimiento
-        $firstName = $validatedData['firstName'];
-        $lastName = $validatedData['lastName'];
-        $randomDigits = strtoupper(substr(md5(mt_rand()), 0, 7)); // Generar 7 caracteres aleatorios
-
-        // Crear el nuevo nombre de la imagen
-        $newImageName = "photo_users-{$created_at}-{$date_of_birth}-{$firstName}-{$lastName}-{$randomDigits}.jpg";
+    // Validar los datos recibidos, incluyendo el formato correcto para la fecha.
+    $validatedData = $request->validate([
+        'firstName' => 'required|string|max:255',
+        'middleName' => 'nullable|string|max:255',
+        'lastName' => 'required|string|max:255',
+        'secondLastName' => 'nullable|string|max:255',
+        'photo_users' => 'nullable|image|mimes:jpeg,png,jpg',
+        'date_of_birth' => 'required|date',
+        'maritalStatus' => 'required|in:married,divorced,single',
+        'sex' => 'required|in:F,M',
+    ]);
 
 
-        $photo_usersxxx = $profile->photo_users;
 
-        // Actualizar los campos del perfil.
-        $profile->fill($validatedData);
+    // Log para depurar la fecha recibida y asegurar que esté en el formato correcto
+    Log::info('Fecha recibida: ' . $validatedData['date_of_birth']);  // Verificar que esté en formato Y-m-d
 
-        // Obtener la URL base según el entorno.
-        $baseUrl = env('APP_ENV') === 'production'
-            ? env('APP_URL_PRODUCTION')
-            : env('APP_URL_LOCAL');
+    // Obtener el nombre del perfil y la fecha de creación
+    $created_at = $profile->created_at->format('YmdHis');  // Formato de fecha
+    $date_of_birth = Carbon::parse($validatedData['date_of_birth'])->format('Ymd'); // Formato de fecha de nacimiento (Ymd)
+    $firstName = $validatedData['firstName'];
+    $lastName = $validatedData['lastName'];
+    $randomDigits = strtoupper(substr(md5(mt_rand()), 0, 7));  // Generar 7 caracteres aleatorios
 
-        // Manejo del archivo (si se sube uno nuevo).
-        if ($request->hasFile('photo_users')) {
-            // Eliminar la imagen anterior si existe.
-            if ($profile->photo_users) {
-                // Log de la imagen anterior desde la base de datos
-                Storage::disk('public')->delete(str_replace($baseUrl . '/storage/', '', $photo_usersxxx));
-            } else {
-                Log::info('No hay imagen anterior para eliminar.');
-            }
+    // Establecer valores predeterminados para campos opcionales
+    $validatedData['middleName'] = $request->middleName ?? '';  // Asegurar que 'middleName' no sea null
+    $validatedData['secondLastName'] = $request->secondLastName ?? '';  // Asegurar que 'secondLastName' no sea null
 
-            // Guardar la nueva imagen en el disco público.
-            $path = $request->file('photo_users')->storeAs('profile_images', $newImageName, 'public');
-            $profile->photo_users = $baseUrl . '/storage/' . $path;
+
+    // Crear el nuevo nombre de la imagen
+    $newImageName = "photo_users-{$created_at}-{$date_of_birth}-{$firstName}-{$lastName}-{$randomDigits}.jpg";
+
+    // Obtener la URL base según el entorno
+    $baseUrl = env('APP_ENV') === 'production'
+        ? env('APP_URL_PRODUCTION')
+        : env('APP_URL_LOCAL');
+
+    // Mantener la URL de la foto anterior (si existe)
+    $photo_usersxxx = $profile->photo_users;
+
+    // Actualizar los campos del perfil
+    $profile->fill($validatedData);
+
+    // Manejo del archivo (si se sube uno nuevo)
+    if ($request->hasFile('photo_users')) {
+        // Eliminar la imagen anterior si existe
+        if ($profile->photo_users) {
+            // Log de la imagen anterior desde la base de datos
+            Storage::disk('public')->delete(str_replace($baseUrl . '/storage/', '', $photo_usersxxx));
+        } else {
+            Log::info('No hay imagen anterior para eliminar.');
         }
 
-        // Guardar los cambios.
-        $profile->save();
-
-        return response()->json([
-            'message' => 'Perfil actualizado exitosamente.',
-            'profile' => $profile,
-            'isSuccess' => true
-        ], 200);
+        // Guardar la nueva imagen en el disco público
+        $path = $request->file('photo_users')->storeAs('profile_images', $newImageName, 'public');
+        $profile->photo_users = $baseUrl . '/storage/' . $path;
     }
+
+    // Guardar los cambios en el perfil
+    $profile->save();
+
+    return response()->json([
+        'message' => 'Perfil actualizado exitosamente.',
+        'profile' => $profile,
+        'isSuccess' => true
+    ], 200);
+}
+
 
     /**
      * Eliminar un perfil.
