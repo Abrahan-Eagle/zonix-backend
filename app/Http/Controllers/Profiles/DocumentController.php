@@ -18,6 +18,12 @@ class DocumentController extends Controller
 
     public function store(Request $request)
     {
+
+        // Validar que el tipo de documento sea válido
+        if (!in_array($request->type, ['ci', 'passport', 'rif', 'neighborhood_association'])) {
+            return response()->json(['error' => 'Invalid document type'], 400);
+        }
+
         // Validación para verificar si el documento ya existe
         $existingDocument = Document::where('profile_id', $request->profile_id)
             ->where('type', $request->type)
@@ -38,14 +44,13 @@ class DocumentController extends Controller
         // Crear el documento con valores predeterminados
         $document = Document::create(array_merge(
             $request->only([
-                'profile_id', 'type', 'number', 'RECEIPT_N', 'rif_url',
-                'taxDomicile', 'issued_at', 'expires_at'
+                'profile_id', 'type', 'number_ci', 'RECEIPT_N', 'rif_url',
+                'taxDomicile', 'issued_at', 'expires_at', 'sky', 'commune_register', 'community_rif'
             ]),
             $paths,
             [
                 'status' => true,
                 'approved' => false,
-                'count' => 1,
             ]
         ));
 
@@ -68,6 +73,13 @@ class DocumentController extends Controller
 
     public function update(Request $request, $id)
     {
+
+          // Validar que el tipo de documento sea válido
+        if (!in_array($request->type, ['ci', 'passport', 'rif', 'neighborhood_association'])) {
+            return response()->json(['error' => 'Invalid document type'], 400);
+        }
+
+
         $document = Document::find($id);
 
         if (!$document) {
@@ -84,8 +96,8 @@ class DocumentController extends Controller
 
         $document->update(array_merge(
             $request->only([
-                'type', 'number', 'RECEIPT_N', 'rif_url', 'taxDomicile',
-                'issued_at', 'expires_at', 'status'
+                'type', 'number_ci', 'RECEIPT_N', 'rif_url', 'taxDomicile',
+                'issued_at', 'expires_at', 'status', 'sky', 'commune_register', 'community_rif'
             ]),
             $paths
         ));
@@ -119,17 +131,21 @@ class DocumentController extends Controller
 
         switch ($type) {
             case 'ci':
+                $rules = array_merge($rules, [
+                    'number_ci' => 'required|integer', // Cambiar 'number' por 'number_ci'
+                    'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
+                ]);
+                break;
             case 'passport':
                 $rules = array_merge($rules, [
                     'number' => 'required|integer',
                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
-                    'back_image' => $type === 'ci' ? 'nullable|image|mimes:jpg,jpeg,png' : 'prohibited',
                 ]);
                 break;
 
             case 'rif':
                 $rules = array_merge($rules, [
-                    'number' => 'required|integer',
+                    'sky' => 'nullable|integer',
                     'RECEIPT_N' => 'nullable|integer',
                     'rif_url' => 'nullable|string',
                     'taxDomicile' => 'nullable|string',
@@ -139,6 +155,8 @@ class DocumentController extends Controller
 
             case 'neighborhood_association':
                 $rules = array_merge($rules, [
+                    'commune_register' => 'nullable|string',  // Agregar validación para 'commune_register'
+                    'community_rif' => 'nullable|string',    // Agregar validación para 'community_rif'
                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
                 ]);
                 break;
@@ -158,14 +176,7 @@ class DocumentController extends Controller
             $paths['front_image'] = $request->file('front_image')->store('documents/front', 'public');
         }
 
-        if ($request->hasFile('back_image')) {
-            if ($document && $document->back_image) {
-                Storage::disk('public')->delete($document->back_image);
-            }
-            $paths['back_image'] = $request->file('back_image')->store('documents/back', 'public');
-        }
-
-        return $paths;
+         return $paths;
     }
 
     private function deleteImages(Document $document)
@@ -173,180 +184,7 @@ class DocumentController extends Controller
         if ($document->front_image) {
             Storage::disk('public')->delete($document->front_image);
         }
-        if ($document->back_image) {
-            Storage::disk('public')->delete($document->back_image);
-        }
+
     }
 }
 
-
-
-// namespace App\Http\Controllers\Profiles;
-
-// use App\Http\Controllers\Controller;
-// use Illuminate\Http\Request;
-// use App\Models\Document;
-// use Illuminate\Support\Facades\Validator;
-// use Illuminate\Support\Facades\Storage;
-
-// class DocumentController extends Controller
-// {
-//     public function index()
-//     {
-//         $documents = Document::with('profile')->active()->get();
-//         return response()->json($documents);
-//     }
-
-//     public function store(Request $request)
-//     {
-//         // Validación para verificar si el documento ya existe
-//         $existingDocument = Document::where('profile_id', $request->profile_id)
-//             ->where('type', $request->type)
-//             ->first();
-
-//         if ($existingDocument) {
-//             return response()->json(['error' => 'A document of type ' . $request->type . ' already exists for this profile.'], 400);
-//         }
-
-//         $validator = $this->getValidator($request->all(), $request->type);
-
-//         if ($validator->fails()) {
-//             return response()->json(['error' => $validator->errors()], 400);
-//         }
-
-//         $paths = $this->handleImageUpload($request);
-
-//         $document = Document::create(array_merge(
-//             $request->only([
-//                 'profile_id', 'type', 'number', 'RECEIPT_N', 'rif_url',
-//                 'taxDomicile', 'issued_at', 'expires_at', 'status'
-//             ]),
-//             $paths
-//         ));
-
-//         return response()->json(['message' => 'Document created successfully', 'document' => $document], 201);
-//     }
-
-//     public function show($id)
-//     {
-//         $document = Document::with('profile')->where('profile_id', $id)->where('status', true)->get();
-
-//         if ($document->isEmpty()) {
-//             return response()->json(['message' => 'Document not found'], 404);
-//         }
-
-//         return response()->json($document);
-//     }
-
-//     public function update(Request $request, $id)
-//     {
-//         $document = Document::find($id);
-
-//         if (!$document) {
-//             return response()->json(['message' => 'Document not found'], 404);
-//         }
-
-//         $validator = $this->getValidator($request->all(), $request->type ?? $document->type);
-
-//         if ($validator->fails()) {
-//             return response()->json(['error' => $validator->errors()], 400);
-//         }
-
-//         $paths = $this->handleImageUpload($request, $document);
-
-//         $document->update(array_merge(
-//             $request->only([
-//                 'type', 'number', 'RECEIPT_N', 'rif_url', 'taxDomicile',
-//                 'issued_at', 'expires_at', 'status'
-//             ]),
-//             $paths
-//         ));
-
-//         return response()->json(['message' => 'Document updated successfully', 'document' => $document]);
-//     }
-
-//     public function destroy($id)
-//     {
-//         $document = Document::find($id);
-
-//         if (!$document) {
-//             return response()->json(['message' => 'Document not found'], 404);
-//         }
-
-//         $this->deleteImages($document);
-//         $document->delete();
-
-//         return response()->json(['message' => 'Document deleted successfully']);
-//     }
-
-//     private function getValidator(array $data, string $type)
-//     {
-//         $rules = [
-//             'profile_id' => 'required|exists:profiles,id',
-//             'issued_at' => 'nullable|date',
-//             'expires_at' => 'nullable|date|after_or_equal:issued_at',
-//             'status' => 'boolean',
-//             'front_image' => 'nullable|image|mimes:jpg,jpeg,png', // Verifica esta regla
-//         ];
-
-//         switch ($type) {
-//             case 'ci':
-//             case 'passport':
-//                 $rules = array_merge($rules, [
-//                     'number' => 'required|integer',
-//                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
-//                     'back_image' => $type === 'ci' ? 'nullable|image|mimes:jpg,jpeg,png' : 'prohibited',
-//                 ]);
-//                 break;
-
-//             case 'rif':
-//                 $rules = array_merge($rules, [
-//                     'number' => 'required|integer',
-//                     'RECEIPT_N' => 'nullable|integer',
-//                     'rif_url' => 'nullable|string',
-//                     'taxDomicile' => 'nullable|string',
-//                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
-//                 ]);
-//                 break;
-
-//             case 'neighborhood_association':
-//                 $rules = array_merge($rules, [
-//                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
-//                 ]);
-//                 break;
-//         }
-
-//         return Validator::make($data, $rules);
-//     }
-
-//     private function handleImageUpload(Request $request, Document $document = null)
-//     {
-//         $paths = [];
-
-//         if ($request->hasFile('front_image')) {
-//             if ($document && $document->front_image) {
-//                 Storage::disk('public')->delete($document->front_image);
-//             }
-//             $paths['front_image'] = $request->file('front_image')->store('documents/front', 'public');
-//         }
-
-//         if ($request->hasFile('back_image')) {
-//             if ($document && $document->back_image) {
-//                 Storage::disk('public')->delete($document->back_image);
-//             }
-//             $paths['back_image'] = $request->file('back_image')->store('documents/back', 'public');
-//         }
-
-//         return $paths;
-//     }
-
-//     private function deleteImages(Document $document)
-//     {
-//         if ($document->front_image) {
-//             Storage::disk('public')->delete($document->front_image);
-//         }
-//         if ($document->back_image) {
-//             Storage::disk('public')->delete($document->back_image);
-//         }
-//     }
-// }
