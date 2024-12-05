@@ -22,7 +22,7 @@ class ProfileFactory extends Factory
 
         $user = User::inRandomOrder()->first();
         return [
-            'user_id' => $user ? $user->id : null,
+            'user_id' => $user->id,
             'firstName' => $this->faker->firstName,
             'middleName' => $this->faker->firstName,
             'lastName' => $this->faker->lastName,

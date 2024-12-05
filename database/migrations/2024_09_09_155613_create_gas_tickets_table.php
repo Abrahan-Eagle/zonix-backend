@@ -26,6 +26,8 @@ return new class extends Migration
             $table->foreign('profile_id')->references('id')->on('profiles')->onDelete('cascade');
             $table->unsignedBigInteger('gas_cylinders_id')->nullable(); // ID de la bombonas de gas
             $table->foreign('gas_cylinders_id')->references('id')->on('gas_cylinders')->onDelete('cascade'); // Relación con la tabla gas_cylinders
+            $table->unsignedBigInteger('station_id'); // Relación obligatoria con stations
+            $table->foreign('station_id')->references('id')->on('stations')->onDelete('cascade');
 
             $table->timestamps();
         });

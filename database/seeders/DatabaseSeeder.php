@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Email;
 use App\Models\GasCylinder;
+use App\Models\Profile;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -16,6 +17,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::factory(10)->create();
+        Profile::factory(10)->create();
         GasCylinder::factory(10)->create();
         // GasCylinder::factory(10)->create();
 
@@ -69,7 +71,7 @@ class DatabaseSeeder extends Seeder
             StatesSeeder::class,
             CitiesSeeder::class,
             GasSuppliersSeeder::class,
-
+            StationsSeeder::class,
             //VEHICULE DATA
             // VehicleTypesSeeder::class,
             // MarksSeeder::class,

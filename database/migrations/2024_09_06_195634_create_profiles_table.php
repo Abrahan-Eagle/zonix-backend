@@ -24,10 +24,13 @@ return new class extends Migration
             $table->enum('maritalStatus', ['married', 'divorced', 'single'])->default('single');
             $table->enum('sex', ['F', 'M'])->default('M');
             $table->enum('status', ['completeData', 'incompleteData', 'notverified'])->default('notverified');
+            $table->unsignedBigInteger('station_id')->nullable(); // Relación opcional con stations
             $table->timestamps();
 
-            // Definir la relación con users
+            // Relaciones
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('station_id')->references('id')->on('stations')->onDelete('set null');
+
         });
     }
 
