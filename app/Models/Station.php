@@ -27,6 +27,18 @@ class Station extends Model
         'code',
     ];
 
+
+
+    // public function profile()
+    // {
+    //     return $this->belongsTo(Profile::class, 'profile_id');
+    // }
+
+    // public function gasTicket()
+    // {
+    //     return $this->belongsTo(GasTicket::class);
+    // }
+
     // Si los campos created_at y updated_at no son necesarios o son personalizados, puedes deshabilitarlos
     // public $timestamps = false;
 

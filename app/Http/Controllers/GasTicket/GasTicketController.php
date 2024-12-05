@@ -346,6 +346,15 @@ class GasTicketController extends Controller
     }
 
 
+    public function getGasStations()
+    {
+        $stations = Station::where('active', true)->get();
+        // Verifica si estás obteniendo los datos correctamente
+        return response()->json($stations);
+    }
+
+
+
     /**
      * Update the specified gas ticket.
      */
