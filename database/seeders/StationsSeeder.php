@@ -17,196 +17,191 @@ class StationsSeeder extends Seeder
         $stations = [
             [
                 'id' => 1,
+                'code' => 'CAR_LLD_001', // Código actualizado
                 'name' => 'Carabobo Gas C.A.',
                 'location' => '2035, Tocuyito 0241, Carabobo',
-                'latitude' => 10.0848,
-                'longitude' => -68.0371,
+                'code_plus' => '3WQ4+HG',
+                'latitude' => 10.0888875,
+                'longitude' => -68.0962378,
                 'contact_number' => '04144102449',
                 'responsible_person' => 'Carlos Pérez',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '3WQ4HG'
             ],
             [
                 'id' => 2,
+                'code' => 'VAL_LLD_002', // Código actualizado
                 'name' => 'Micro Llenadero Dracula Socorro',
-                'location' => '4WHX+GH5, Valencia 2001, Carabobo',
-                'latitude' => 10.1685,
-                'longitude' => -68.0021,
-                'contact_number' => null,
+                'location' => 'Valencia 2001, Carabobo',
+                'code_plus' => '4WHX+GH5',
+                'latitude' => 10.1279335,
+                'longitude' => -68.0534832,
+                'contact_number' => '04142345678', // Número falso
                 'responsible_person' => 'Ana González',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '4WHXGH5'
             ],
             [
                 'id' => 3,
-                'name' => 'Gasdracula',
-                'location' => '5X36+676, Av principal, Valencia 2001, Carabobo',
-                'latitude' => 10.1723,
-                'longitude' => -68.0167,
-                'contact_number' => null,
+                'code' => 'VAL_LLD_003', // Código actualizado
+                'name' => 'Gasdracula La Florida',
+                'location' => 'Av principal, Valencia 2001, Carabobo',
+                'code_plus' => '5X36+676',
+                'latitude' => 10.1519414,
+                'longitude' => -68.0800114,
+                'contact_number' => '04145678901', // Número falso
                 'responsible_person' => 'Luis Rodríguez',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '5X36G676'
             ],
             [
                 'id' => 4,
+                'code' => 'VAL_LLD_004', // Código actualizado
                 'name' => 'Micro llenadero de Gas Dracula',
-                'location' => '4XRG+4W9, Valencia 2001, Carabobo',
-                'latitude' => 10.1634,
-                'longitude' => -68.0164,
-                'contact_number' => null,
+                'location' => 'Valencia 2001, Carabobo',
+                'code_plus' => '4XRG+4W9',
+                'latitude' => 10.1402765,
+                'longitude' => -68.0252215,
+                'contact_number' => '04147894523', // Número falso
                 'responsible_person' => 'Pedro Martínez',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '4XRG4W9'
             ],
             [
                 'id' => 5,
-                'name' => 'Llenadero De Gas',
-                'location' => '42Q6+C3W, Valencia 2001, Carabobo',
-                'latitude' => 10.1733,
-                'longitude' => -68.0073,
-                'contact_number' => null,
+                'code' => 'VAL_LLD_005', // Código actualizado
+                'name' => 'Llenadero De Gas Monumental',
+                'location' => 'Valencia 2001, Carabobo',
+                'code_plus' => '42Q6+C3W',
+                'latitude' => 10.141998,
+                'longitude' => -67.9971005,
+                'contact_number' => '04148956372', // Número falso
                 'responsible_person' => 'Sofía Ramírez',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '42Q6C3W'
             ],
             [
                 'id' => 6,
+                'code' => 'VAL_PLT_006', // Código actualizado
                 'name' => 'PDVSA Gas Comunal',
-                'location' => '5XGV+78P, Av. Soublette, entre y Cantaura, C.C. Profesional Center, PB., Calle Silva, Valencia, Carabobo',
-                'latitude' => 10.1567,
-                'longitude' => -67.9774,
-                'contact_number' => null,
+                'location' => 'Av. Soublette, entre y Cantaura, C.C. Profesional Center, PB., Calle Silva, Valencia, Carabobo',
+                'code_plus' => '5XGV+78P',
+                'latitude' => 10.1757005,
+                'longitude' => -68.0092523,
+                'contact_number' => '04149478322', // Número falso
                 'responsible_person' => 'María Fernández',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '5XGV78P'
             ],
             [
                 'id' => 7,
+                'code' => 'VAL_PLT_007', // Código actualizado
                 'name' => 'Planta De Llenado Negra Hipolita (Gas Dracula)',
                 'location' => '7 Trans. 8, Valencia 2003, Carabobo',
-                'latitude' => 10.1956,
-                'longitude' => -67.9689,
-                'contact_number' => null,
+                'code_plus' => '52CG+G7',
+                'latitude' => 10.1713024,
+                'longitude' => -67.9740619,
+                'contact_number' => '04141567890', // Número falso
                 'responsible_person' => 'Javier López',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '7Trans8'
             ],
             [
                 'id' => 8,
+                'code' => 'NAG_LLD_008', // Código actualizado
                 'name' => 'Llenadero de Guaparo',
-                'location' => '6XHR+CWQ, Av. La Hispanidad, Naguanagua 2005, Carabobo',
-                'latitude' => 10.1744,
-                'longitude' => -67.9608,
-                'contact_number' => null,
+                'location' => 'Av. La Hispanidad, Naguanagua 2005, Carabobo',
+                'code_plus' => '6XHR+CWQ',
+                'latitude' => 10.228595,
+                'longitude' => -68.0102259,
+                'contact_number' => '04143128934', // Número falso
                 'responsible_person' => 'Gabriela Torres',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '6XHRCWQ'
             ],
             [
                 'id' => 9,
+                'code' => 'GUA_LLD_009', // Código actualizado
                 'name' => 'PDVSA GAS',
-                'location' => '638W+436, Guacara 2015, Carabobo',
-                'latitude' => 10.1819,
-                'longitude' => -67.9055,
-                'contact_number' => null,
+                'location' => 'Guacara 2015, Carabobo',
+                'code_plus' => '638W+436',
+                'latitude' => 10.2285846,
+                'longitude' => -68.090054,
+                'contact_number' => '04149872561', // Número falso
                 'responsible_person' => 'Fernando Gómez',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '638W436'
             ],
             [
                 'id' => 10,
+                'code' => 'GUA_PLT_010', // Código actualizado
                 'name' => 'AUTOGAS LLENADERO PDVSA',
-                'location' => '63RP+G54, Variante Yagua, Guacara 2015, Carabobo',
-                'latitude' => 10.2422,
-                'longitude' => -67.8882,
-                'contact_number' => null,
+                'location' => 'Variante Yagua, Guacara 2015, Carabobo',
+                'code_plus' => '63RP+G54',
+                'latitude' => 10.2412654,
+                'longitude' => -67.9866385,
+                'contact_number' => '04146782314', // Número falso
                 'responsible_person' => 'Elena Pérez',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '63RPG54'
             ],
             [
                 'id' => 11,
+                'code' => 'GUA_PLT_011', // Código actualizado
                 'name' => 'Planta Yagua PDVSA',
-                'location' => '732M+5F, Guacara 2015, Carabobo',
-                'latitude' => 10.2355,
-                'longitude' => -67.8796,
-                'contact_number' => null,
+                'location' => 'Guacara 2015, Carabobo',
+                'code_plus' => '732M+5F',
+                'latitude' => 10.2504995,
+                'longitude' => -67.9188444,
+                'contact_number' => '04148963547', // Número falso
                 'responsible_person' => 'Luis Torres',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '732M5F'
             ],
             [
                 'id' => 12,
+                'code' => 'GUA_LLD_012', // Código actualizado
                 'name' => 'Centro de llenado de gas',
-                'location' => '64W6+7QW, Guacara 2015, Carabobo',
-                'latitude' => 10.2323,
-                'longitude' => -67.8703,
-                'contact_number' => null,
+                'location' => 'Guacara 2015, Carabobo',
+                'code_plus' => '64W6+7QW',
+                'latitude' => 10.2504891,
+                'longitude' => -67.9986725,
+                'contact_number' => '04149765432', // Número falso
                 'responsible_person' => 'Carlos Herrera',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
+                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
                 'opening_time' => '09:00:00',
                 'closing_time' => '17:00:00',
                 'active' => true,
-                'code' => '64W67QW'
             ],
-            [
-                'id' => 13,
-                'name' => 'Llenadero De Gas Comunal PDVSA Turmero',
-                'location' => '6FH4+4R, Turmero, Aragua',
-                'latitude' => 10.2276,
-                'longitude' => -67.5681,
-                'contact_number' => '08002662662',
-                'responsible_person' => 'Ricardo López',
-                'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday',
-                'opening_time' => '09:00:00',
-                'closing_time' => '17:00:00',
-                'active' => true,
-                'code' => '6FH44R'
-            ]
         ];
 
         // DB::table('stations')->insert($stations);
 
-
         foreach ($stations as $station) {
-            $stationx = Station::create( $station );
-            echo $stationx . "STATIONS";
+            $stationx = Station::create($station);
+            echo $stationx . " STATIONS";
         }
-
-
     }
 }

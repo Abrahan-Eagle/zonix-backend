@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id(); // Identificador único
             $table->string('name', 191); // Nombre de la estación
             $table->string('location', 255)->nullable(); // Dirección (opcional)
+            $table->string('code_plus', 255)->nullable(); // Dirección (code_plus)
             $table->decimal('latitude', 10, 8)->nullable(); // Latitud GPS
             $table->decimal('longitude', 11, 8)->nullable(); // Longitud GPS
             $table->string('contact_number', 15)->nullable(); // Número de contacto
