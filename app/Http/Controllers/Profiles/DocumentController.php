@@ -138,7 +138,8 @@ class DocumentController extends Controller
                 break;
             case 'passport':
                 $rules = array_merge($rules, [
-                    'number' => 'required|integer',
+                    'number_ci' => 'required|integer',
+                    'RECEIPT_N' => 'nullable|integer',
                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
                 ]);
                 break;
@@ -157,6 +158,7 @@ class DocumentController extends Controller
                 $rules = array_merge($rules, [
                     'commune_register' => 'nullable|string',  // Agregar validación para 'commune_register'
                     'community_rif' => 'nullable|string',    // Agregar validación para 'community_rif'
+                    'taxDomicile' => 'nullable|string',
                     'front_image' => 'nullable|image|mimes:jpg,jpeg,png',
                 ]);
                 break;
