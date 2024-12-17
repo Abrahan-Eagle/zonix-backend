@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('number', 7); // Número local con longitud fija
             $table->boolean('is_primary')->default(false);
             $table->boolean('status')->default(true); // se muestra el correo solo si esta activo
+            $table->boolean('approved')->default(false);// significa si el documento esta aprovado
             $table->timestamps();
 
         });

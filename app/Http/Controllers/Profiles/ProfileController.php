@@ -264,4 +264,17 @@ class ProfileController extends Controller
 
         return response()->json(['message' => 'Perfil eliminado exitosamente']);
     }
+
+
+// En tu controlador (UserController)
+        public function getProfileId($id)
+        {
+
+            $profile = Profile::where('user_id', $id)->first();
+            if ($profile) {
+                return response()->json(['profileId' => $profile->id], 200);
+            } else {
+                return response()->json(['error' => 'User profile not found'], 404);
+            }
+        }
 }

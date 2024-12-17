@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Authenticator\AuthController;
+use App\Http\Controllers\GasTicket\Admin\DataVerificationController;
 use App\Http\Controllers\GasTicket\AdminController;
 use App\Http\Controllers\GasTicket\GasCylinderController;
 use App\Http\Controllers\GasTicket\GasTicketController;
@@ -113,11 +114,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/get-cities-by-state', [AddressController::class, 'getCity']);
     });
 
-    Route::prefix('neighborhood-associations')->group(function () {
-        Route::get('/', [NeighborhoodAssociationController::class, 'index']);
-        Route::post('/', [NeighborhoodAssociationController::class, 'store']);
-        Route::get('/{id}', [NeighborhoodAssociationController::class, 'show']);
-        Route::put('/{id}', [NeighborhoodAssociationController::class, 'update']);
-        Route::delete('/{id}', [NeighborhoodAssociationController::class, 'destroy']);
+
+    Route::get('/qr-profile/{id}', [ProfileController::class, 'getProfileId']);
+
+    Route::prefix('data-verification/{profile_id}')->group(function () {
+        // Ruta para obtener las verificaciones de datos
+        Route::get('/', [DataVerificationController::class, 'getdataVerifications']);
+        // Rutas para actualizar el estado de las direcciones, cilindros de gas, teléfonos, documentos y correos electrónicos
+        Route::post('/update-status-check-scanner/profiles', [DataVerificationController::class, 'updateVerificationsProfiles']);
+        Route::post('/update-status-check-scanner/addresses', [DataVerificationController::class, 'updateVerificationsAddresses']);
+        Route::post('/update-status-check-scanner/gas-cylinders', [DataVerificationController::class, 'updateVerificationsGasCylinders']);
+        Route::post('/update-status-check-scanner/phones', [DataVerificationController::class, 'updateVerificationsPhones']);
+        Route::post('/update-status-check-scanner/documents', [DataVerificationController::class, 'updateVerificationsDocuments']);
+        Route::post('/update-status-check-scanner/emails', [DataVerificationController::class, 'updateVerificationsEmails']);
     });
+
+
+
+
+
 });
