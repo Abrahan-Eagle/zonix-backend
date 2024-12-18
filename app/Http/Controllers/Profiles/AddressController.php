@@ -149,12 +149,6 @@ public function store(Request $request)
 
 
 
-
-
-
-
-
-
 public function getCountries(Request $request)
 {
     $countries = Country::get(['name', 'id']);

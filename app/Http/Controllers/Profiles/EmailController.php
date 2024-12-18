@@ -104,51 +104,7 @@ class EmailController extends Controller
         ]);
     }
 
-
-
-
-    // public function update(Request $request, $id)
-    // {
-    //     // Buscar el correo electrónico por profile_id
-    //     $email = Email::where('profile_id', $id)->first();
-
-    //     if (!$email) {
-    //         return response()->json(['message' => 'Email not found'], 404);
-    //     }
-
-    //     // Validar los datos de la solicitud
-    //     $validator = Validator::make($request->all(), [
-    //         'email' => 'email|unique:emails,email,' . $email->id,
-    //         'is_primary' => 'boolean',
-    //         'status' => 'boolean', // Validamos el status
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json(['error' => $validator->errors()], 400);
-    //     }
-
-    //     // Actualizar el estado de 'is_primary' si se establece como verdadero
-    //     if ($request->is_primary) {
-    //         Email::where('profile_id', $id)
-    //             ->where('is_primary', true)
-    //             ->where('id', '!=', $email->id) // No cambiar el mismo email
-    //             ->update(['is_primary' => false]);
-    //     }
-
-    //     // Actualizar los campos del correo electrónico
-    //     $email->email = $request->email ?? $email->email;
-    //     $email->is_primary = $request->is_primary ?? $email->is_primary;
-    //     $email->status = $request->status ?? $email->status;
-
-    //     // Guardar los cambios
-    //     $email->save();
-
-    //     return response()->json(['message' => 'Email updated successfully', 'email' => $email]);
-    // }
-
-
-
-    /**
+   /**
      * Remove the specified email from storage.
      */
     public function destroy($id)

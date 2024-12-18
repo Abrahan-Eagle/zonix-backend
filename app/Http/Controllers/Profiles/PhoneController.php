@@ -22,40 +22,6 @@ class PhoneController extends Controller
         return response()->json($operatorCode);
     }
 
-    /**
-     * Store a newly created phone in storage.
-     */
-    // public function store(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'profile_id' => 'required|exists:profiles,id',
-    //         'operator_code_id' => 'required|exists:operator_codes,id',
-    //         'number' => 'required|string|min:7|max:7|unique:phones,number',
-    //         'is_primary' => 'boolean',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json(['error' => $validator->errors()], 400);
-    //     }
-
-    //     // Si se marca como principal, desmarcar otros teléfonos principales del mismo perfil
-    //     if ($request->is_primary) {
-    //         Phone::where('profile_id', $request->profile_id)
-    //             ->where('is_primary', true)
-    //             ->update(['is_primary' => false]);
-    //     }
-
-    //     // Crear el nuevo teléfono
-
-    //     $phone = Phone::create([
-    //         'profile_id' => $request->profile_id,
-    //         'number' => $request->number,
-    //         'is_primary' => $request->is_primary ?? false,
-    //     ]);
-
-    //     return response()->json(['message' => 'Phone created successfully', 'phone' => $phone], 201);
-    // }
-
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
