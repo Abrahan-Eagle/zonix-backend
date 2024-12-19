@@ -17,8 +17,8 @@ return new class extends Migration
 
             $table->integer('number_ci')->nullable(); // Número del documento
 
-            $table->integer('RECEIPT_N')->nullable(); // N° COMPROBANTE
-            $table->integer('sky')->nullable(); // Número del documento
+            $table->bigInteger('RECEIPT_N')->nullable(); // N° COMPROBANTE
+            $table->bigInteger('sky')->nullable(); // Número del documento
             $table->string('rif_url')->nullable(); // URL del RIF
             $table->string('taxDomicile')->nullable(); // domicilio fiscal
 
