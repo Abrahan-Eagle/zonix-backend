@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\OperatorCode;
 use Illuminate\Http\Request;
 use App\Models\Phone;
+use App\Models\Profile;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class PhoneController extends Controller
 {
@@ -24,8 +26,12 @@ class PhoneController extends Controller
 
     public function store(Request $request)
     {
+        // Log::info('Datos recibidos:', $request->all());
+        // local.INFO: Datos recibidos: {"id":0,"profile_id":3,"operator_code_id":1,"operator_code_name":null,"number":"1234567","is_primary":1,"status":1}
+
+
         $validator = Validator::make($request->all(), [
-            'profile_id' => 'required|exists:profiles,id',
+            'profile_id' => 'required|exists:profiles,user_id',
             'operator_code_id' => 'required|exists:operator_codes,id',
             'number' => 'required|string|min:7|max:15|unique:phones,number',
             'is_primary' => 'boolean',
@@ -35,14 +41,16 @@ class PhoneController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
+        $profile = Profile::where('user_id', $request->profile_id)->firstOrFail();
+
         if ($request->is_primary) {
-            Phone::where('profile_id', $request->profile_id)
+            Phone::where('profile_id', $profile->id)
                 ->where('is_primary', true)
                 ->update(['is_primary' => false]);
         }
 
         $phone = Phone::create([
-            'profile_id' => $request->profile_id,
+            'profile_id' => $profile->id,
             'operator_code_id' => $request->operator_code_id, // Agregar este campo si es necesario
             'number' => $request->number,
             'is_primary' => $request->is_primary ?? false,
@@ -56,7 +64,10 @@ class PhoneController extends Controller
      */
     public function show($id)
     {
-        $phone = Phone::with(['profile', 'operatorCode'])->where('profile_id', $id)->where('status', true)->get();
+
+        $profile = Profile::where('user_id', $id)->firstOrFail();
+
+        $phone = Phone::with(['profile', 'operatorCode'])->where('profile_id', $profile->id)->where('status', true)->get();
 
         if (!$phone) {
             return response()->json(['message' => 'Phone not found'], 404);
