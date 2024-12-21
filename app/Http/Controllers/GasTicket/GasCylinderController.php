@@ -9,6 +9,7 @@ use App\Models\GasSupplier;
 use App\Models\Profile;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class GasCylinderController extends Controller
 {
@@ -22,6 +23,10 @@ class GasCylinderController extends Controller
 
     public function store(Request $request)
     {
+
+        //  Log::info('Datos recibidos:', $request->all());
+        // local.INFO: Datos recibidos: {"gas_cylinder_code":"3434343434646494848454545484845454845484848484848","user_id":"3","company_supplier_id":"1","cylinder_type":"small","cylinder_weight":"10kg","manufacturing_date":"2024-12-20T00:00:00.000","photo_gas_cylinder":{"Illuminate\\Http\\UploadedFile":"/tmp/phpXWtBzg"}}
+
         // Validación de los datos de entrada.
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id', // Asegúrate de que el user_id existe
@@ -37,6 +42,8 @@ class GasCylinderController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
+        $profile = Profile::where('user_id', $request->user_id)->firstOrFail();
+
         // Preparar los datos para la creación de la bombona.
         $cylinderData = $request->only([
             'cylinder_type',
@@ -44,7 +51,7 @@ class GasCylinderController extends Controller
         ]);
 
         // Cambiar user_id a profile_id
-        $cylinderData['profile_id'] = $request->input('user_id');
+        $cylinderData['profile_id'] = $profile->id;
 
         // Formatear el código de la bombona
         // $currentDate = now()->format('Ymd'); // Formato de fecha YYYYMMDD
