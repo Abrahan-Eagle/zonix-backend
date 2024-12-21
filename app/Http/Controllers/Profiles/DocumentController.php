@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Profiles;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Document;
+use App\Models\Profile;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
 
 class DocumentController extends Controller
 {
@@ -18,14 +21,18 @@ class DocumentController extends Controller
 
     public function store(Request $request)
     {
+        // Log::info('Datos recibidos:', $request->all());
+// Datos recibidos: {"profile_id":"3","type":"ci","issued_at":"2024-12-21T00:00:00.000","expires_at":"2024-12-21T00:00:00.000","number_ci":"94646464","front_image":{"Illuminate\\Http\\UploadedFile":"/tmp/php9hrbPi"}}
 
         // Validar que el tipo de documento sea válido
         if (!in_array($request->type, ['ci', 'passport', 'rif', 'neighborhood_association'])) {
             return response()->json(['error' => 'Invalid document type'], 400);
         }
 
+        $profile = Profile::where('user_id', $request->profile_id)->firstOrFail();
+
         // Validación para verificar si el documento ya existe
-        $existingDocument = Document::where('profile_id', $request->profile_id)
+        $existingDocument = Document::where('profile_id', $profile->id)
             ->where('type', $request->type)
             ->first();
 
@@ -44,11 +51,12 @@ class DocumentController extends Controller
         // Crear el documento con valores predeterminados
         $document = Document::create(array_merge(
             $request->only([
-                'profile_id', 'type', 'number_ci', 'RECEIPT_N', 'rif_url',
+                 'type', 'number_ci', 'RECEIPT_N', 'rif_url',
                 'taxDomicile', 'issued_at', 'expires_at', 'sky', 'commune_register', 'community_rif'
             ]),
             $paths,
             [
+                'profile_id' => $profile->id,
                 'status' => true,
                 'approved' => false,
             ]
@@ -59,8 +67,13 @@ class DocumentController extends Controller
 
     public function show($id)
     {
+
+        // Log::info('Valor de $id recibido en show:', ['id' => $id]);
+
+        $profile = Profile::where('user_id', $id)->firstOrFail();
+
         $document = Document::with('profile')
-            ->where('profile_id', $id)
+            ->where('profile_id', $profile->id)
             // ->where('status', true)
             ->get();
 
@@ -122,7 +135,7 @@ class DocumentController extends Controller
     private function getValidator(array $data, string $type)
     {
         $rules = [
-            'profile_id' => 'required|exists:profiles,id',
+            'profile_id' => 'required|exists:profiles,user_id',
             'issued_at' => 'nullable|date',
             'expires_at' => 'nullable|date|after_or_equal:issued_at',
             'status' => 'boolean',
