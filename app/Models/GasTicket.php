@@ -20,6 +20,7 @@ class GasTicket extends Model
         'asistio',
         'profile_id',
         'gas_cylinders_id',
+        'station_id',
     ];
 
     // Relación con el perfil
@@ -63,6 +64,12 @@ class GasTicket extends Model
     {
         return $this->hasManyThrough(Document::class, Profile::class);
     }
+
+    public function station()
+    {
+        return $this->belongsTo(Station::class);
+    }
+
 }
 
 // namespace App\Models;

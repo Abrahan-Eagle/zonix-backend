@@ -14,4 +14,11 @@ class OperatorCode extends Model
 
     // Ajuste en la clave foránea: 'user_id'
     protected $fillable = ['id', 'code', 'name'];
+
+    // Aquí puede ser algo simple si el operador tiene una relación simple con Phone
+    public function phones()
+    {
+        return $this->hasMany(Phone::class);
+    }
+
 }

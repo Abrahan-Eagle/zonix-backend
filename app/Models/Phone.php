@@ -31,11 +31,15 @@ class Phone extends Model
     }
 
     // Relación con OperatorCode: Un teléfono pertenece a un código de operador.
-    public function operatorCode()
-    {
-        return $this->belongsTo(OperatorCode::class, 'operator_code_id');
-    }
+    // public function operatorCode()
+    // {
+    //     return $this->belongsTo(OperatorCode::class, 'operator_code_id');
+    // }
 
+    public function operator_code()
+    {
+        return $this->belongsTo(OperatorCode::class);
+    }
     /**
      * Scope para obtener solo teléfonos principales.
      */
