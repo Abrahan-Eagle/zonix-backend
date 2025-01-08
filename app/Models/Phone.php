@@ -36,10 +36,19 @@ class Phone extends Model
     //     return $this->belongsTo(OperatorCode::class, 'operator_code_id');
     // }
 
-    public function operator_code()
+    // public function operator_code()
+    // {
+    //     return $this->belongsTo(OperatorCode::class);
+    // }
+
+    public function operatorCode()
     {
-        return $this->belongsTo(OperatorCode::class);
+        return $this->belongsTo(OperatorCode::class, 'operator_code_id');
     }
+
+
+
+
     /**
      * Scope para obtener solo teléfonos principales.
      */

@@ -62,19 +62,40 @@ class PhoneController extends Controller
     /**
      * Display the specified phone.
      */
-    public function show($id)
-    {
+    // public function show($id)
+    // {
 
-        $profile = Profile::where('user_id', $id)->firstOrFail();
+    //     Log::info('Datos recibidos:', $request->all());
 
-        $phone = Phone::with(['profile', 'operatorCode'])->where('profile_id', $profile->id)->where('status', true)->get();
+    //     $profile = Profile::where('user_id', $id)->firstOrFail();
 
-        if (!$phone) {
-            return response()->json(['message' => 'Phone not found'], 404);
+    //     $phone = Phone::with(['profile', 'operatorCode'])->where('profile_id', $profile->id)->where('status', true)->get();
+
+    //     if (!$phone) {
+    //         return response()->json(['message' => 'Phone not found'], 404);
+    //     }
+
+    //     return response()->json($phone);
+    // }
+
+        public function show(Request $request, $id)
+        {
+            Log::info('Datos recibidos:', $request->all());
+
+            $profile = Profile::where('user_id', $id)->firstOrFail();
+
+            $phone = Phone::with(['profile', 'operatorCode'])
+                ->where('profile_id', $profile->id)
+                ->where('status', true)
+                ->get();
+
+            if (!$phone) {
+                return response()->json(['message' => 'Phone not found'], 404);
+            }
+
+            return response()->json($phone);
         }
 
-        return response()->json($phone);
-    }
 
     /**
      * Update the specified phone in storage.
