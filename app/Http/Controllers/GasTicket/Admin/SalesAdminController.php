@@ -27,15 +27,27 @@ class SalesAdminController extends Controller
         $ticket->save();
 
         // Cargar las relaciones del ticket después de actualizar el estado
+        // $ticket = $ticket->load([
+        //     'profile',                       // Carga el perfil
+        //     'profile.user',                  // Carga el usuario a través del perfil
+        //     'profile.phones',                // Carga los teléfonos a través del perfil
+        //     'profile.emails',                // Carga los correos electrónicos a través del perfil
+        //     'profile.documents',             // Carga los documentos a través del perfil
+        //     'profile.addresses',             // Carga las direcciones a través del perfil
+        //     'profile.gasCylinders',          // Carga los cilindros de gas a través del perfil
+        //     'gasCylinder'                    // Carga el cilindro de gas directamente asociado al ticket
+        // ]);
+
         $ticket = $ticket->load([
-            'profile',                       // Carga el perfil
-            'profile.user',                  // Carga el usuario a través del perfil
-            'profile.phones',                // Carga los teléfonos a través del perfil
-            'profile.emails',                // Carga los correos electrónicos a través del perfil
-            'profile.documents',             // Carga los documentos a través del perfil
-            'profile.addresses',             // Carga las direcciones a través del perfil
-            'profile.gasCylinders',          // Carga los cilindros de gas a través del perfil
-            'gasCylinder'                    // Carga el cilindro de gas directamente asociado al ticket
+            'profile',
+            'profile.user',
+            'profile.phones.operatorCode',
+            'profile.emails',
+            'profile.documents',
+            'profile.addresses',
+            'profile.gasCylinders',
+            'gasCylinder',
+            'station',
         ]);
 
         // Responder con el ticket actualizado y sus relaciones
@@ -78,12 +90,14 @@ class SalesAdminController extends Controller
         $tickets = GasTicket::with([
             'profile',                       // Carga el perfil
             'profile.user',                  // Carga el usuario a través del perfil
-            'profile.phones',                // Carga los teléfonos a través del perfil
+            // 'profile.phones',                // Carga los teléfonos a través del perfil
+            'profile.phones.operatorCode',
             'profile.emails',                // Carga los correos electrónicos a través del perfil
             'profile.documents',             // Carga los documentos a través del perfil
             'profile.addresses',             // Carga las direcciones a través del perfil
             'profile.gasCylinders',          // Carga los cilindros de gas a través del perfil
-            'gasCylinder'                    // Carga el cilindro de gas directamente asociado al ticket
+            'gasCylinder',                    // Carga el cilindro de gas directamente asociado al ticket
+            'station'
         ])->where('qr_code', $qrCodeId)
         ->whereIn('status', ['waiting'])->get();
 
