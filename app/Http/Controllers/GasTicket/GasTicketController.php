@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-
+use Illuminate\Support\Facades\Log;
 
 class GasTicketController extends Controller
 {
@@ -28,6 +28,21 @@ class GasTicketController extends Controller
 
     public function store(Request $request)
     {
+
+        // Log::info('xxxxxxxxxxxxxxxxxxxxxxxxxx Datos recibidos:', $request->all());
+
+
+
+            // Obtener el profile_id a partir del user_id recibido
+        if ($request->has('user_id')) {
+            $profile = Profile::where('user_id', $request->user_id)->first();
+            if (!$profile) {
+                return response()->json(['message' => 'Profile not found for the given user ID'], 404);
+            }
+            // Asignar el profile_id al request
+            $request->merge(['profile_id' => $profile->id]);
+        }
+
         // Validar los datos de la solicitud
         $validator = Validator::make($request->all(), [
             'profile_id' => 'required|exists:profiles,id',
@@ -39,6 +54,22 @@ class GasTicketController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
+
+
+
+
+
+        // // Validar los datos de la solicitud
+        // $validator = Validator::make($request->all(), [
+        //     'profile_id' => 'required|exists:profiles,id',
+        //     'gas_cylinders_id' => 'required|exists:gas_cylinders,id',
+        //     'station_id' => 'nullable|exists:stations,id', // Si aplica una estación distinta
+        //     'is_external' => 'boolean' // Checkbox para usuarios externos
+        // ]);
+
+        // if ($validator->fails()) {
+        //     return response()->json(['error' => $validator->errors()], 400);
+        // }
 
 
 
