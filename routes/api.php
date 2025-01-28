@@ -63,6 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('dispatch')->group(function () {
         Route::post('/tickets/{qrCodeId}/qr-code', [SalesAdminController::class, 'qrCode']);
+        Route::post('/tickets/{qrCodeId}/qr-code-gas-cylinder-admin-sale', [SalesAdminController::class, 'qrCodeGasCylinderAdminSale']);
         Route::post('/tickets/{id}/dispatch', [SalesAdminController::class, 'dispatchTicket']);
     });
 

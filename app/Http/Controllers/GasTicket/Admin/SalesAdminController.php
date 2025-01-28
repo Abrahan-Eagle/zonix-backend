@@ -113,6 +113,50 @@ class SalesAdminController extends Controller
     }
 
 
+    // public function qrCodeGasCylinderAdminSale($qrCodeId)
+    // {
+    //     $tickets = GasTicket::with([
+    //        'profile.gasCylinders',          // Carga los cilindros de gas a través del perfil
+
+    //     ])->where('qr_code', $qrCodeId)
+    //     ->whereIn('status', ['verifying'])->get();
+
+    //     if ($tickets->isEmpty()) {
+    //         return response()->json(['message' => 'No gas tickets found'], 404);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $tickets,
+    //         'message' => 'Ticket'
+    //     ]);
+    // }
+
+    public function qrCodeGasCylinderAdminSale($qrCodeId)
+        {
+            $tickets = GasTicket::with([
+                'profile.gasCylinders', // Carga los cilindros de gas a través del perfil
+            ])
+            ->where('qr_code', $qrCodeId)
+            ->whereIn('status', ['verifying'])
+            ->get();
+
+            if ($tickets->isEmpty()) {
+                return response()->json(['message' => 'No gas tickets found'], 404);
+            }
+
+            // Extrae solo los códigos de los cilindros de gas
+            $data = $tickets->pluck('profile.gasCylinders.*.gas_cylinder_code')->flatten();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'message' => 'Ticket'
+            ]);
+        }
+
+
+
 
     // Cambiar estado a 'dispatched'
     public function dispatchTicket($id)
