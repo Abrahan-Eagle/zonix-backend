@@ -113,6 +113,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,  // Asegúrate de que el campo 'role' exista en la tabla users
+            'google_id' => $user->google_id,
             'completed_onboarding' => $user->completed_onboarding,
         ]);
     }
