@@ -15,7 +15,7 @@ class DataVerificationController extends Controller
 {
     public function getdataVerifications($profile_id)
     {
-        // Validar el profile_id
+        // Validar el profile_id xxxxxxxxxxxxxx
         if (!is_numeric($profile_id)) {
             return response()->json([
                 'status' => 'error',
