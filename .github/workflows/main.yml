@@ -75,7 +75,7 @@ jobs:
       # Paso 11: Verificar las variables de entorno en Laravel (opcional)
       - name: Test .env variables
         run: |
-          curl https://zonix.uniblockweb.com/api/env-test
+          curl https://zonix.aiblockweb.com/api/env-test
 
 
 # name: Publish Website to CPanel
