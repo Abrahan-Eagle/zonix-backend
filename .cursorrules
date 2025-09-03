@@ -1,0 +1,371 @@
+# ZONIX Backend Rules for Cursor AI
+
+## 🏭 Business Model Context
+
+### 🎯 **Core Business: Gas Distribution Management System**
+ZONIX es un sistema integral de gestión de distribución de gas doméstico que maneja:
+
+#### **🏪 Estaciones de Gas (Stations)**
+- **Ubicaciones físicas** donde se distribuye gas
+- **Horarios específicos** por día de la semana
+- **Límite diario**: 200 citas por estación
+- **Códigos únicos** para identificación
+- **Estado activo/inactivo**
+
+#### **🎫 Tickets de Gas (Gas Tickets)**
+- **Sistema de citas** para compra de bombonas
+- **Cola virtual** con posiciones (1-200)
+- **Estados del ticket**:
+  - `pending` - Pendiente de verificación
+  - `verifying` - En proceso de verificación
+  - `waiting` - Esperando en cola
+  - `dispatched` - Entregado/Comprado
+  - `canceled` - Cancelado
+  - `expired` - Expirado
+- **Reglas de negocio**:
+  - **21 días mínimo** entre compras (para usuarios internos)
+  - **Citas solo en domingo** para usuarios externos
+  - **Expiración**: 2 días después de la cita
+  - **QR Code** único por ticket
+
+#### **🛢️ Bombonas de Gas (Gas Cylinders)**
+- **Tipos**: small, wide
+- **Pesos**: 10kg, 18kg, 45kg
+- **Códigos únicos** de fabricación
+- **Aprobación** requerida antes de uso
+- **Proveedores** asociados
+
+#### **👥 Roles de Usuario**
+1. **Usuario Regular**: Crear tickets, ver historial
+2. **Sales Admin**: Verificar datos, escanear QR, aprobar tickets
+3. **Dispatcher**: Gestionar colas, despachar tickets
+
+### 🔄 **Flujo de Negocio Principal**
+1. **Usuario crea ticket** → Selecciona bombona → Asigna estación
+2. **Sistema valida** → Reglas de negocio → Asigna posición en cola
+3. **Sales Admin verifica** → Escanea QR → Valida datos
+4. **Dispatcher gestiona** → Cola física → Entrega bombona
+5. **Ticket marcado** → `dispatched` → Registro completo
+
+## Project Context
+- Laravel 10 backend for ZONIX gas ticket management system
+- REST API with Laravel Sanctum authentication
+- MySQL database with complex relationships
+- Handles Google Sign-In, profiles, tickets, and role-based access
+
+## File Structure
+- Controllers: `app/Http/Controllers/`
+- Models: `app/Models/`
+- Routes: `routes/api.php`
+- Migrations: `database/migrations/`
+- Seeders: `database/seeders/`
+
+## Coding Standards
+
+### PHP/Laravel
+- Use Spanish comments and variable names when possible
+- Follow Laravel conventions: snake_case for database, camelCase for variables
+- Use Eloquent relationships properly
+- Always validate input data with Form Requests
+- Use proper HTTP status codes
+- Handle errors with try-catch and logging
+- Use Laravel Sanctum for authentication
+- Follow PSR-12 coding standards
+
+### API Design
+- Use RESTful conventions
+- Always return JSON responses with consistent structure
+- Include proper HTTP headers
+- Use Bearer token authentication
+- Handle CORS properly
+- Validate all inputs
+- Use proper HTTP methods (GET, POST, PUT, DELETE)
+
+## Database Rules
+
+### Models and Relationships
+- User 1:1 Profile
+- Profile has many: Phones, Emails, Documents, Addresses
+- GasTicket belongs to: Profile, GasCylinder, Station
+- Use proper foreign keys and constraints
+- Always define relationships in models
+- Use $casts for data type conversion
+- Use $fillable/$guarded properly
+
+### Business Logic Rules
+- **Ticket Creation Validation**:
+  - Check 21-day rule for internal users
+  - Validate Sunday-only for external users
+  - Verify daily limit (200 tickets per station)
+  - Assign automatic queue position
+  - Generate unique QR code
+- **Ticket State Management**:
+  - `pending` → `verifying` (Sales Admin only)
+  - `verifying` → `waiting` (Sales Admin only)
+  - `waiting` → `dispatched` (Dispatcher only)
+  - Auto-expire after 2 days
+- **Station Validation**:
+  - Check days available per station
+  - Validate opening/closing times
+  - Handle external vs internal appointments
+- **Gas Cylinder Rules**:
+  - Must be approved before use
+  - Validate manufacturing date
+  - Check supplier association
+
+### Example Model Structure
+```php
+class GasTicket extends Model
+{
+    protected $fillable = [
+        'profile_id', 'gas_cylinders_id', 'status', 'queue_position'
+    ];
+    
+    protected $casts = [
+        'id' => 'integer',
+        'profile_id' => 'integer',
+        'gas_cylinders_id' => 'integer',
+        'queue_position' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+    
+    public function profile()
+    {
+        return $this->belongsTo(Profile::class);
+    }
+    
+    public function gasCylinder()
+    {
+        return $this->belongsTo(GasCylinder::class);
+    }
+}
+```
+
+## Authentication Rules
+
+### Sanctum Implementation
+- Use Laravel Sanctum for API authentication
+- Store tokens securely
+- Handle token expiration
+- Validate user permissions
+- Use middleware for protected routes
+
+### Google Sign-In Flow
+```php
+// AuthController::googleUser()
+public function googleUser(Request $request)
+{
+    try {
+        // Validate Google token
+        // Create or update user
+        // Generate Sanctum token
+        // Return user data with role
+        
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'user' => [
+```
+
+### Business Logic Implementation
+```php
+// GasTicketController::store() - Business Rules
+class GasTicketController extends Controller
+{
+    public function store(Request $request)
+    {
+        // 1. Validate 21-day rule for internal users
+        $lastTicket = GasTicket::where('profile_id', $request->profile_id)
+            ->where('status', 'dispatched')
+            ->orderBy('appointment_date', 'desc')
+            ->first();
+            
+        if ($lastTicket && Carbon::now()->diffInDays($lastTicket->appointment_date) < 21) {
+            return response()->json(['message' => 'Must wait 21 days between purchases'], 400);
+        }
+        
+        // 2. Validate Sunday-only for external users
+        if ($request->is_external && !Carbon::now()->isSunday()) {
+            return response()->json(['message' => 'External appointments only on Sundays'], 400);
+        }
+        
+        // 3. Check daily limit (200 tickets per station)
+        $dailyCount = GasTicket::whereDate('appointment_date', $appointmentDate)
+            ->where('station_id', $stationId)
+            ->count();
+            
+        if ($dailyCount >= 200) {
+            return response()->json(['message' => 'Daily limit reached'], 400);
+        }
+        
+        // 4. Assign queue position
+        $queuePosition = $dailyCount + 1;
+        
+        // 5. Generate QR code
+        $qrCode = $gasCylinder->gas_cylinder_code;
+    }
+}
+```
+                'id' => $user->id,
+                'role' => $user->role,
+                'completed_onboarding' => $user->completed_onboarding
+            ]
+        ]);
+    } catch (Exception $e) {
+        Log::error('Google auth error: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Authentication failed'], 401);
+    }
+}
+```
+
+## Error Handling
+
+### Consistent Error Responses
+```php
+// Always use this structure
+return response()->json([
+    'success' => false,
+    'message' => 'Error description',
+    'errors' => $errors // if validation errors
+], $statusCode);
+```
+
+### Logging
+```php
+// Always log errors with context
+Log::error('Error in GasTicketController: ' . $e->getMessage(), [
+    'user_id' => $request->user()->id,
+    'action' => 'create_ticket',
+    'data' => $request->all()
+]);
+```
+
+## API Response Patterns
+
+### Success Response
+```php
+return response()->json([
+    'success' => true,
+    'data' => $data,
+    'message' => 'Operation completed successfully'
+], 200);
+```
+
+### Validation Error
+```php
+return response()->json([
+    'success' => false,
+    'message' => 'Validation failed',
+    'errors' => $validator->errors()
+], 422);
+```
+
+### Not Found
+```php
+return response()->json([
+    'success' => false,
+    'message' => 'Resource not found'
+], 404);
+```
+
+## Security Rules
+
+### Input Validation
+- Always validate all inputs
+- Use Form Request classes for complex validation
+- Sanitize user inputs
+- Never trust user data
+- Use proper validation rules
+
+### Authentication
+- Always check user permissions
+- Use middleware for protected routes
+- Validate tokens properly
+- Handle expired tokens gracefully
+
+### Data Protection
+- Never expose sensitive data in responses
+- Use proper encryption for sensitive data
+- Log security events
+- Implement rate limiting
+
+## Database Operations
+
+### Migrations
+- Use descriptive migration names
+- Include proper foreign key constraints
+- Add indexes for performance
+- Use proper data types
+- Include rollback methods
+
+### Seeders
+- Create realistic test data
+- Use factories when possible
+- Include all required relationships
+- Make seeders idempotent
+
+## Testing Guidelines
+
+### Unit Tests
+- Test all model relationships
+- Test validation rules
+- Test authentication logic
+- Test error handling
+
+### Feature Tests
+- Test all API endpoints
+- Test authentication flows
+- Test role-based access
+- Test error scenarios
+
+## Performance Rules
+
+### Database Optimization
+- Use proper indexing
+- Avoid N+1 queries
+- Use eager loading for relationships
+- Implement caching where appropriate
+
+### API Optimization
+- Use pagination for large datasets
+- Implement proper caching headers
+- Optimize response size
+- Use proper HTTP status codes
+
+## Environment Configuration
+
+### Local Development
+- APP_ENV=local
+- APP_DEBUG=true
+- DB_DATABASE=zionix_BD
+- APP_URL_LOCAL=http://192.168.27.4:8000
+- Device: Always 192.168.27.5:5555
+
+### Production
+- APP_ENV=production
+- APP_DEBUG=false
+- Use proper environment variables
+- Enable caching
+- CI/CD: Automatic deployment on GitHub push
+
+### Database Management
+- Reset database when schema changes required
+- Use seeders for different testing scenarios
+- Backup before major changes
+
+## Remember
+- This is a production API handling real user data
+- Security is critical - validate everything
+- Follow Laravel best practices
+- Use proper error handling
+- Log important events
+- Test thoroughly before commits
+- Document API endpoints
+- Use consistent response formats
+- Handle authentication properly
+- Optimize for performance
+- Use Spanish for comments and user-facing content
+- Reset database when schema changes required
+- CI/CD deployment on GitHub push
+- Always test in local before pushing
