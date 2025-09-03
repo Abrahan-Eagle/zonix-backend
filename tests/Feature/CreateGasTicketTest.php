@@ -6,7 +6,9 @@ use App\Models\Profile;
 use App\Models\GasCylinder;
 use App\Models\Station;
 use App\Models\GasTicket;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 use Carbon\Carbon;
 
@@ -14,31 +16,57 @@ class CreateGasTicketTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function it_creates_a_ticket_successfully()
-    {
-        // Preparación de datos
-        $profile = Profile::factory()->create();
-        $gasCylinder = GasCylinder::factory()->create();
-        $station = Station::factory()->create();
+    protected User $user;
+    protected Station $station;
+    protected Profile $profile;
+    protected GasCylinder $gasCylinder;
 
-        $data = [
-            'profile_id' => $profile->id,
-            'gas_cylinders_id' => $gasCylinder->id,
-            'station_id' => $station->id,
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Crear datos base para los tests
+        $this->user = User::factory()->create();
+        $this->station = Station::factory()->create([
+            'days_available' => 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
+            'active' => true
+        ]);
+        $this->profile = Profile::factory()->create([
+            'user_id' => $this->user->id,
+            'station_id' => $this->station->id
+        ]);
+        $this->gasCylinder = GasCylinder::factory()->create([
+            'profile_id' => $this->profile->id,
+            'approved' => true
+        ]);
+        
+        // Asignar el perfil al usuario
+        $this->user->profile()->save($this->profile);
+    }
+
+    private function createTicketRequest($data = [])
+    {
+        $defaultData = [
+            'profile_id' => $this->profile->id,
+            'gas_cylinders_id' => $this->gasCylinder->id,
             'is_external' => false
         ];
 
-        $response = $this->postJson(route('store-gas-ticket'), $data);
+        return $this->actingAs($this->user)
+            ->postJson('/api/tickets', array_merge($defaultData, $data));
+    }
 
-        // Asegúrate de que la respuesta sea un código 201
+    /** @test */
+    public function it_creates_a_ticket_successfully()
+    {
+        $response = $this->createTicketRequest();
+
         $response->assertStatus(201);
 
-        // Verificar que el ticket ha sido creado en la base de datos
         $this->assertDatabaseHas('gas_tickets', [
-            'profile_id' => $profile->id,
-            'gas_cylinders_id' => $gasCylinder->id,
-            'station_id' => $station->id,
+            'profile_id' => $this->profile->id,
+            'gas_cylinders_id' => $this->gasCylinder->id,
+            'station_id' => $this->station->id,
             'status' => 'pending'
         ]);
     }
@@ -46,20 +74,19 @@ class CreateGasTicketTest extends TestCase
     /** @test */
     public function it_returns_error_if_no_station_is_assigned()
     {
-        // Preparación de datos
-        $profile = Profile::factory()->create();
-        $gasCylinder = GasCylinder::factory()->create();
+        // Crear perfil sin estación asignada
+        $profileWithoutStation = Profile::factory()->create([
+            'user_id' => $this->user->id,
+            'station_id' => null
+        ]);
 
-        $data = [
-            'profile_id' => $profile->id,
-            'gas_cylinders_id' => $gasCylinder->id,
-            'station_id' => null,
-            'is_external' => false
-        ];
+        $response = $this->actingAs($this->user)
+            ->postJson('/api/tickets', [
+                'profile_id' => $profileWithoutStation->id,
+                'gas_cylinders_id' => $this->gasCylinder->id,
+                'is_external' => false
+            ]);
 
-        $response = $this->postJson(route('store-gas-ticket'), $data);
-
-        // Verifica que la respuesta es un error 400 con el mensaje esperado
         $response->assertStatus(400)
             ->assertJson(['message' => 'No station assigned to the user']);
     }
@@ -67,29 +94,16 @@ class CreateGasTicketTest extends TestCase
     /** @test */
     public function it_prevents_duplicated_tickets_for_pending_status()
     {
-        // Preparación de datos
-        $profile = Profile::factory()->create();
-        $gasCylinder = GasCylinder::factory()->create();
-        $station = Station::factory()->create();
-
-        // Crear un ticket existente en la base de datos
-        $ticket = GasTicket::factory()->create([
-            'profile_id' => $profile->id,
-            'gas_cylinders_id' => $gasCylinder->id,
-            'station_id' => $station->id,
+        // Crear un ticket existente en estado pendiente
+        GasTicket::factory()->create([
+            'profile_id' => $this->profile->id,
+            'gas_cylinders_id' => $this->gasCylinder->id,
+            'station_id' => $this->station->id,
             'status' => 'pending'
         ]);
 
-        $data = [
-            'profile_id' => $profile->id,
-            'gas_cylinders_id' => $gasCylinder->id,
-            'station_id' => $station->id,
-            'is_external' => false
-        ];
+        $response = $this->createTicketRequest();
 
-        $response = $this->postJson(route('store-gas-ticket'), $data);
-
-        // Verifica que no se haya creado un nuevo ticket
         $response->assertStatus(400)
             ->assertJson(['message' => 'You cannot generate a new ticket while another one is pending, verifying, or waiting.']);
     }
@@ -97,49 +111,39 @@ class CreateGasTicketTest extends TestCase
     /** @test */
     public function it_checks_ticket_creation_on_sundays_for_external_users()
     {
-        // Preparación de datos
-        $profile = Profile::factory()->create();
-        $gasCylinder = GasCylinder::factory()->create();
-        $station = Station::factory()->create();
+        // Simular que es domingo
+        Carbon::setTestNow(Carbon::create(2024, 1, 14)); // Domingo
 
-        // Simulamos que hoy es domingo
-        Carbon::setTestNow(Carbon::parse('2024-12-01')); // Domingo
+        $response = $this->actingAs($this->user)
+            ->postJson('/api/tickets', [
+                'profile_id' => $this->profile->id,
+                'gas_cylinders_id' => $this->gasCylinder->id,
+                'is_external' => true,
+                'station_id' => $this->station->id
+            ]);
 
-        $data = [
-            'profile_id' => $profile->id,
-            'gas_cylinders_id' => $gasCylinder->id,
-            'station_id' => $station->id,
-            'is_external' => true
-        ];
-
-        $response = $this->postJson(route('store-gas-ticket'), $data);
-
-        // Verifica que el ticket se haya creado correctamente
         $response->assertStatus(201);
+
+        Carbon::setTestNow(); // Reset
     }
 
     /** @test */
     public function it_rejects_external_users_on_non_sundays()
     {
-        // Preparación de datos
-        $profile = Profile::factory()->create();
-        $gasCylinder = GasCylinder::factory()->create();
-        $station = Station::factory()->create();
+        // Simular que no es domingo
+        Carbon::setTestNow(Carbon::create(2024, 1, 15)); // Lunes
 
-        // Simulamos que hoy no es domingo
-        Carbon::setTestNow(Carbon::parse('2024-12-02')); // Lunes
+        $response = $this->actingAs($this->user)
+            ->postJson('/api/tickets', [
+                'profile_id' => $this->profile->id,
+                'gas_cylinders_id' => $this->gasCylinder->id,
+                'is_external' => true,
+                'station_id' => $this->station->id
+            ]);
 
-        $data = [
-            'profile_id' => $profile->id,
-            'gas_cylinders_id' => $gasCylinder->id,
-            'station_id' => $station->id,
-            'is_external' => true
-        ];
-
-        $response = $this->postJson(route('store-gas-ticket'), $data);
-
-        // Verifica que la respuesta sea un error 400 con el mensaje esperado
         $response->assertStatus(400)
             ->assertJson(['message' => 'External appointments are only allowed on Sundays']);
+
+        Carbon::setTestNow(); // Reset
     }
 }

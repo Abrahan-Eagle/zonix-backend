@@ -11,6 +11,7 @@ class GasTicket extends Model
 
     protected $fillable = [
         'queue_position',
+        'time_position',
         'qr_code',
         'reserved_date',
         'appointment_date',

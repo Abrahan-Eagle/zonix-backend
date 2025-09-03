@@ -66,10 +66,8 @@ class ProfileController extends Controller
 
         // Manejar la carga de la imagen.
         if ($request->hasFile('photo_users')) {
-            // Obtener la URL base según el entorno.
-            $baseUrl = env('APP_ENV') === 'production'
-                ? env('APP_URL_PRODUCTION')
-                : env('APP_URL_LOCAL');
+            // Obtener la URL base desde la configuración.
+            $baseUrl = env('APP_URL');
 
             // Guardar la nueva imagen en el disco público.
             $path = $request->file('photo_users')->store('profile_images', 'public');
@@ -135,10 +133,8 @@ class ProfileController extends Controller
     // Crear el nuevo nombre de la imagen
     $newImageName = "photo_users-{$created_at}-{$date_of_birth}-{$firstName}-{$lastName}-{$randomDigits}.jpg";
 
-    // Obtener la URL base según el entorno
-    $baseUrl = env('APP_ENV') === 'production'
-        ? env('APP_URL_PRODUCTION')
-        : env('APP_URL_LOCAL');
+    // Obtener la URL base desde la configuración
+    $baseUrl = env('APP_URL');
 
     // Mantener la URL de la foto anterior (si existe)
     $photo_usersxxx = $profile->photo_users;
@@ -185,9 +181,7 @@ class ProfileController extends Controller
 
         // Eliminar la imagen asociada si existe.
         if ($profile->photo_users) {
-            $baseUrl = env('APP_ENV') === 'production'
-                ? env('APP_URL_PRODUCTION')
-                : env('APP_URL_LOCAL');
+            $baseUrl = env('APP_URL');
             Storage::disk('public')->delete(str_replace($baseUrl . '/storage/', '', $profile->photo_users));
         }
 

@@ -54,9 +54,19 @@ class AuthController extends Controller
                     'family_name' => $data['family_name'],
                     'profile_pic' => $data['picture'],
                     'completed_onboarding' => false, // Inicialmente false
-
                 ]
             );
+
+            // Actualizar los datos del usuario si ya existe
+            if ($user->wasRecentlyCreated === false) {
+                $user->update([
+                    'name' => $data['name'],
+                    'google_id' => $googleId,
+                    'given_name' => $data['given_name'],
+                    'family_name' => $data['family_name'],
+                    'profile_pic' => $data['picture'],
+                ]);
+            }
 
             // Crear el token de Sanctum
             $token = $user->createToken('GoogleToken')->plainTextToken;

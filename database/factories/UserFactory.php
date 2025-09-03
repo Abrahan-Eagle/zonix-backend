@@ -36,7 +36,7 @@ class UserFactory extends Factory
             'family_name' => $this->faker->lastName(),
             'profile_pic' => null, // Puedes cambiarlo si tienes imágenes
             'AccessToken' => null,
-            'role' => 'users', // Cambia esto a 'admin' o 'users'
+            'role' => 'users', // Valor correcto del enum en la migración
             'remember_token' => Str::random(10),
         ];
     }

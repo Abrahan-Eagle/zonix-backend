@@ -22,6 +22,7 @@ class Profile extends Model
         'date_of_birth',
         'maritalStatus',
         'sex',
+        'station_id',
         // 'status',
     ];
 
@@ -69,5 +70,11 @@ class Profile extends Model
     // Relación uno a muchos con el modelo Address
     public function addresses() {
         return $this->hasMany(Address::class);
+    }
+
+    // Relación uno a muchos con el modelo Station
+    public function station()
+    {
+        return $this->belongsTo(Station::class);
     }
 }

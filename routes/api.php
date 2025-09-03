@@ -56,25 +56,25 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('sales-admin')->group(function () {
-        Route::post('/tickets/{id}/verify', [SalesAdminController::class, 'verifyTicket']);
-        Route::post('/tickets/{id}/waiting', [SalesAdminController::class, 'markAsWaiting']);
-        Route::post('/tickets/{id}/cancel', [SalesAdminController::class, 'cancelTicket']);
+        Route::post('/tickets/{id}/verify', [SalesAdminController::class, 'verifyTicket'])->middleware('role:sales_admin');
+        Route::post('/tickets/{id}/waiting', [SalesAdminController::class, 'markAsWaiting'])->middleware('role:sales_admin');
+        Route::post('/tickets/{id}/cancel', [SalesAdminController::class, 'cancelTicket'])->middleware('role:sales_admin');
     });
 
     Route::prefix('dispatch')->group(function () {
-        Route::post('/tickets/{qrCodeId}/qr-code', [SalesAdminController::class, 'qrCode']);
-        Route::post('/tickets/{qrCodeId}/qr-code-gas-cylinder-admin-sale', [SalesAdminController::class, 'qrCodeGasCylinderAdminSale']);
-        Route::post('/tickets/{id}/dispatch', [SalesAdminController::class, 'dispatchTicket']);
+        Route::post('/tickets/{qrCodeId}/qr-code', [SalesAdminController::class, 'qrCode'])->middleware('role:dispatcher');
+        Route::post('/tickets/{qrCodeId}/qr-code-gas-cylinder-admin-sale', [SalesAdminController::class, 'qrCodeGasCylinderAdminSale'])->middleware('role:dispatcher');
+        Route::post('/tickets/{id}/dispatch', [SalesAdminController::class, 'dispatchTicket'])->middleware('role:dispatcher');
     });
 
     Route::prefix('tickets')->group(function () {
-        Route::get('/', [GasTicketController::class, 'index']);
-        Route::post('/', [GasTicketController::class, 'store']);
-        Route::get('/{id}', [GasTicketController::class, 'show']);
-        Route::get('/getGasCylinders/{id}', [GasTicketController::class, 'getGasCylinders']);
-        Route::get('/stations/getGasStations', [GasTicketController::class, 'getGasStations']);
-        Route::put('/{id}', [GasTicketController::class, 'update']);
-        Route::delete('/{id}', [GasTicketController::class, 'destroy']);
+        Route::get('/', [GasTicketController::class, 'index'])->name('tickets.index');
+        Route::post('/', [GasTicketController::class, 'store'])->name('store-gas-ticket');
+        Route::get('/{id}', [GasTicketController::class, 'show'])->name('tickets.show');
+        Route::get('/getGasCylinders/{id}', [GasTicketController::class, 'getGasCylinders'])->name('tickets.gas-cylinders');
+        Route::get('/stations/getGasStations', [GasTicketController::class, 'getGasStations'])->name('tickets.stations');
+        Route::put('/{id}', [GasTicketController::class, 'update'])->name('tickets.update');
+        Route::delete('/{id}', [GasTicketController::class, 'destroy'])->name('tickets.destroy');
     });
 
     Route::post('/admin/close-cycle', [AdminController::class, 'closeCycle']);
