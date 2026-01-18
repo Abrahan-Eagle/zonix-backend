@@ -233,12 +233,7 @@ class GasTicketController extends Controller
             'station',
         ])->where('profile_id', $profile->id)->get();
 
-
-
-        if ($tickets->isEmpty()) {
-            return response()->json(['message' => 'No gas tickets found'], 404);
-        }
-
+        // Retornar array vacío con status 200 si no hay tickets (no es un error)
         return response()->json($tickets);
     }
 
