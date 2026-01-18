@@ -421,19 +421,183 @@ return response()->json([
   6. ⏳ Implementar caching (Redis) - 2-4 horas
   7. ⏳ Revisar y optimizar queries (N+1, índices) - 2-3 horas
 
-### Métricas del Proyecto
+### Métricas del Proyecto (Verificado Diciembre 2024)
 - **Versión**: 1.0.0
-- **Controladores**: 12 clases
+- **Líneas de código (controladores)**: ~2,114 líneas PHP
+- **Controladores**: 12 clases (1 importado pero sin rutas: NeighborhoodAssociationController)
 - **Modelos**: 16 modelos Eloquent
-- **Rutas API**: ~66 endpoints
-- **Tests**: 11 archivos (6 Feature, 3 Unit)
+- **Rutas API**: 66 endpoints registrados (según `php artisan route:list`)
+  - 2 rutas debug críticas expuestas: `/env-test`, `/migrate-refresh`
+  - 58+ endpoints funcionales autenticados
+- **Migraciones**: 22 archivos de migración
+- **Tests**: 11 archivos PHP
+  - Feature: 6 archivos (35+ métodos test identificados)
+  - Unit: 3 archivos (17+ métodos test identificados)
+  - Base: 2 archivos (TestCase, CreatesApplication)
 - **Cobertura**: No medida (objetivo: >70%)
 - **Mantenibilidad**: 7/10
 
+### Vulnerabilidades Críticas Identificadas (Backend)
+
+**CRÍTICO - Remediar Inmediatamente:**
+1. ❌ **Rutas de debug expuestas** - `routes/api.php:19-27`
+   - `/env-test` - Expone configuración con `dd(env('APP_NAME'), env('DB_DATABASE'), env('APP_DEBUG'))`
+   - `/migrate-refresh` - Permite resetear BD en producción con `Artisan::call('migrate:refresh', ['--seed' => true])`
+   - **Impacto**: Seguridad - expone configuración y permite resetear BD
+   - **Esfuerzo**: 5 minutos (eliminar o proteger con middleware `env('APP_ENV') === 'local'`)
+
+2. ❌ **CI/CD configurando APP_DEBUG=true en producción** - `.github/workflows/main.yml:58-59`
+   - El pipeline de GitHub Actions fuerza `APP_DEBUG=true` en despliegue a producción
+   - Línea 58-59: `echo "APP_DEBUG=true" >> .env` y `sed -i 's/APP_DEBUG=.*/APP_DEBUG=true/' .env`
+   - **Impacto**: Seguridad CRÍTICA - expone información sensible en errores de producción
+   - **Esfuerzo**: 5 minutos (cambiar a `APP_DEBUG=false` o usar variable de entorno condicional)
+
+### Deuda Técnica Identificada (Backend)
+
+**Problemas conocidos a evitar:**
+
+1. **Código comentado extenso** (~160+ líneas identificadas):
+   - `GasTicket.php:76-109` - 34 líneas comentadas
+   - `SalesAdminController.php:30-39, 116-133` - 28 líneas comentadas
+   - `EmailController.php:26-51` - 26 líneas comentadas (método store() completo)
+   - `Station.php:32-49` - 18 líneas comentadas (relaciones y métodos)
+   - `PhoneController.php:20-21, 29, 65-79` - 17 líneas comentadas
+   - `DocumentController.php:68-85, 71, 101` - 18+ líneas comentadas
+   - `GasTicketController.php:32, 62-72` - 11 líneas comentadas
+   - `AddressController.php:33` - 1 línea comentada
+   - **Impacto**: Mantenibilidad - código muerto confunde
+   - **Esfuerzo**: 45 minutos (limpiar todos)
+
+2. **Logs de debug en producción**:
+   - `ProfileController.php:119, 152` - `Log::info('Fecha recibida: ...')`, `Log::info('No hay imagen anterior...')`
+   - `PhoneController.php:83` - `Log::info('Datos recibidos:', $request->all())`
+   - **Impacto**: Performance y seguridad - expone datos en logs
+   - **Esfuerzo**: 15 minutos (remover o usar logger con niveles)
+
+3. **Magic Numbers hardcodeados**:
+   - `GasTicketController.php:152` - `$maxDailyAppointments = 200;` (límite diario)
+   - `GasTicketController.php:88-89` - `if ($daysSinceLastAppointment < 21)` (regla de 21 días)
+   - **Impacto**: Mantenibilidad - valores difíciles de cambiar
+   - **Esfuerzo**: 30 minutos (extraer a `config/gas_ticket.php`)
+
+4. **Queries duplicadas y N+1 potenciales**:
+   - `GasTicketController::store()` - 2 queries similares (líneas 153-155 y 163-165)
+     ```php
+     // Línea 153: Query 1
+     $dailyAppointments = GasTicket::whereDate('appointment_date', $appointmentDate)
+         ->where('station_id', $stationId)->count();
+     // Línea 163: Query 2 (similar) - reutilizar $dailyAppointments
+     $queuePosition = GasTicket::whereDate('appointment_date', $appointmentDate)
+         ->where('station_id', $stationId)->count() + 1;
+     ```
+   - Búsqueda de profile por user_id duplicada (5+ ubicaciones):
+     - `GasTicketController::store()` - línea 38
+     - `GasTicketController::show()` - línea 218
+     - `GasTicketController::getGasCylinders()` - línea 249
+     - `ProfileController::show()` - línea 91
+     - `PhoneController::show()` - línea 85
+     - `EmailController::show()` - línea 97
+   - `DataVerificationController` - N+1 queries potenciales en bucles:
+     - `updateVerificationsDocuments()` - línea 141: `->get()` en bucle con `foreach`
+     - `updateVerificationsAddresses()` - línea 175: Similar
+     - `updateVerificationsGasCylinders()` - línea 208: Similar
+     - `updateVerificationsPhones()` - línea 241: Similar
+     - `updateVerificationsEmails()` - línea 275: Similar
+   - **Impacto**: Performance - queries innecesarias y N+1 queries
+   - **Esfuerzo**: 1 hora (optimizar reutilizando resultados y agregar eager loading donde sea necesario)
+
+5. **Falta paginación** (6+ endpoints):
+   - `GasTicketController::index()` - `->get()` sin paginación (línea 24)
+   - `ProfileController::index()` - `->get()` sin paginación (línea 20)
+   - `DocumentController::index()` - `->get()` sin paginación
+   - `AddressController::index()` - `->get()` sin paginación
+   - **Impacto**: Performance - puede retornar miles de registros
+   - **Esfuerzo**: 2-3 horas (implementar `->paginate(15)`)
+
+6. **Inconsistencias en timezone**:
+   - Mezcla de `Carbon::now()` y `Carbon::now()->timezone('America/Caracas')`
+   - **Ubicaciones**: `GasTicketController.php:124, 148, 184-186`
+   - **Impacto**: Funcionalidad - bugs potenciales de fecha
+   - **Esfuerzo**: 1 hora (estandarizar a `Carbon::now()->timezone('America/Caracas')`)
+
+7. **Lógica de negocio en controladores**:
+   - `GasTicketController::store()` - 200+ líneas con lógica compleja
+   - Múltiples controladores con validación y lógica mezclada
+   - **Impacto**: Testabilidad - difícil de testear en aislamiento
+   - **Esfuerzo**: 1 semana (extraer a servicios como `GasTicketService`, `ValidationService`)
+
+8. **Sin caching**:
+   - No hay estrategias de caching implementadas
+   - Queries repetidas sin cache (último ticket, conteo diario, etc.)
+   - **Impacto**: Performance - queries repetidas innecesarias
+   - **Esfuerzo**: 2-4 horas (implementar Redis/caching básico)
+
+9. **Falta índices en base de datos para performance**:
+   - `gas_tickets.appointment_date` - Sin índice (usado en validación 21 días y límite diario)
+   - `gas_tickets.station_id + appointment_date` - Sin índice compuesto (usado en límite diario)
+   - `gas_tickets.status` - Sin índice (usado en filtros por estado)
+   - `gas_tickets.profile_id` - Sin índice adicional (solo foreign key)
+   - `profiles.user_id` - Sin índice único (usado frecuentemente para búsquedas)
+   - Solo 2 índices encontrados en `complaints_table` (ci, email) - otros no tienen índices de performance
+   - **Impacto**: Performance - queries lentas con datos grandes
+   - **Esfuerzo**: 1-2 horas (agregar índices en migración)
+
+10. **Bulk updates en DataVerificationController**:
+    - Métodos `updateVerifications*` usan `foreach` con `->save()` individual
+    - `updateVerificationsDocuments()` línea 151-154: `foreach ($documents as $document) { $document->save(); }`
+    - Similar en `updateVerificationsAddresses()`, `updateVerificationsGasCylinders()`, etc.
+    - **Impacto**: Performance - múltiples queries UPDATE donde podría ser 1
+    - **Esfuerzo**: 30 minutos (usar `->update()` o `Model::whereIn()->update()`)
+
 ### Áreas de Seguridad a Revisar
-- ⚠️ Rutas de debug expuestas (CRÍTICO - remediar inmediatamente)
-- ⚠️ Headers de seguridad (verificar CSP, HSTS, X-Frame-Options)
-- ⚠️ Rate limiting (implementar en autenticación)
+
+**Críticas:**
+- ❌ Rutas de debug expuestas (CRÍTICO - remediar inmediatamente)
+
+**Importantes:**
+- ⚠️ Headers de seguridad (verificar CSP, HSTS, X-Frame-Options) - 1 hora
+- ⚠️ Rate limiting (implementar en autenticación) - 2-4 horas
 - ⚠️ Logging de seguridad (mejorar auditoría de acciones críticas)
 
-Para más detalles del análisis exhaustivo, ver `ANALISIS_EXHAUSTIVO_ZONIX.md` en el directorio raíz del proyecto.
+### Recomendaciones para Cursor AI
+
+**Al trabajar en este proyecto backend:**
+
+**CRÍTICO (Prioridad inmediata):**
+- ❌ **NUNCA** dejar rutas de debug expuestas en producción - Siempre verificar `routes/api.php`
+- ✅ Eliminar o proteger rutas de debug con middleware `env('APP_ENV') === 'local'`
+- ❌ **NUNCA** configurar `APP_DEBUG=true` en CI/CD de producción - Verificar `.github/workflows/main.yml:58-59`
+- ✅ En producción usar `APP_DEBUG=false` o condicional basado en `APP_ENV`
+
+**Seguridad:**
+- ✅ Siempre validar inputs con Form Requests
+- ✅ Usar Laravel Sanctum para autenticación
+- ✅ Implementar rate limiting en endpoints sensibles
+- ✅ No exponer información sensible en logs (`Log::info` con datos de usuario)
+
+**Código y Calidad:**
+- ✅ Limpiar código comentado cuando se modifique un archivo
+- ✅ Extraer magic numbers (200, 21) a archivos de configuración
+- ✅ Evitar queries duplicadas - reutilizar resultados cuando sea posible
+- ✅ Implementar paginación en todos los métodos `index()` - usar `->paginate(15)`
+- ✅ Estandarizar timezone a `America/Caracas` - usar `Carbon::now()->timezone('America/Caracas')`
+
+**Arquitectura:**
+- ✅ Extraer lógica de negocio compleja a servicios (ej: `GasTicketService`, `ValidationService`)
+- ✅ Implementar Form Requests para validación centralizada
+- ✅ Usar eager loading para evitar N+1 queries (`->with(['relaciones'])`)
+
+**Performance:**
+- ✅ Implementar caching para queries frecuentes (Redis)
+- ✅ Revisar y agregar índices en migraciones para columnas de búsqueda frecuente
+  - Agregar índice en `gas_tickets.appointment_date`
+  - Agregar índice compuesto en `gas_tickets.station_id + appointment_date`
+  - Agregar índice en `gas_tickets.status`
+  - Agregar índice único en `profiles.user_id`
+- ✅ Optimizar queries duplicadas reutilizando resultados
+- ✅ Usar bulk updates en lugar de `foreach` con `->save()` individual
+  - `DataVerificationController::updateVerifications*()` métodos
+
+**Testing:**
+- ✅ Aumentar cobertura de tests - objetivo >70%
+- ✅ Agregar tests para endpoints faltantes (Phone, Email, Document, Address controllers)

@@ -620,25 +620,130 @@ Para problemas o preguntas sobre el backend:
 6. ⏳ **Implementar caching** (Redis) - 2-4 horas
 7. ⏳ **Revisar y optimizar queries** (N+1, índices) - 2-3 horas
 
-### Métricas del Proyecto
+### Métricas del Proyecto (Verificado Diciembre 2024)
+
+**Backend (Laravel):**
 - **Versión**: 1.0.0
+- **Líneas de código (controladores)**: ~2,114 líneas PHP
 - **Controladores**: 12 clases
+  - Authenticator: 1 (AuthController)
+  - GasTicket: 4 (GasTicketController, GasCylinderController, SalesAdminController, DataVerificationController, AdminController)
+  - Profiles: 5 (ProfileController, PhoneController, EmailController, DocumentController, AddressController)
+  - Profiles (no usado): 1 (NeighborhoodAssociationController - importado pero sin rutas)
 - **Modelos**: 16 modelos Eloquent
-- **Rutas API**: ~66 endpoints
-- **Tests**: 11 archivos (6 Feature, 3 Unit, 2 base)
+  - User, Profile, GasTicket, GasCylinder, Station
+  - Phone, Email, Document, Address
+  - Country, State, City
+  - GasSupplier, Role, OperatorCode, Family
+- **Rutas API**: 66 endpoints registrados (según `php artisan route:list`)
+  - 2 rutas debug críticas expuestas: `/env-test`, `/migrate-refresh`
+  - 58+ endpoints funcionales autenticados
+  - Autenticación: 3 endpoints
+  - Profiles: 6 endpoints
+  - Tickets: 7 endpoints
+  - Sales Admin: 3 endpoints
+  - Dispatch: 3 endpoints
+  - Cylinders: 6 endpoints
+  - Phones: 5 endpoints
+  - Emails: 5 endpoints
+  - Addresses: 8 endpoints (incluye helpers)
+  - Documents: 5 endpoints
+  - Data Verification: 7 endpoints
+  - Onboarding: 1 endpoint
+  - Admin: 1 endpoint
+- **Migraciones**: 22 archivos de migración
+- **Tests**: 11 archivos PHP total
+  - Feature tests: 6 archivos (35+ métodos test)
+  - Unit tests: 3 archivos (17+ métodos test)
+  - Base: 2 archivos (TestCase.php, CreatesApplication.php)
 - **Cobertura**: No medida (objetivo: >70%)
+- **Score de Mantenibilidad**: 7/10
 
 ### Vulnerabilidades de Seguridad Identificadas
 
-**Críticas:**
-- ⚠️ Rutas de debug expuestas (`/env-test`, `/migrate-refresh`)
-- ⚠️ Headers de seguridad no verificados
+**Críticas (Remediar Inmediatamente):**
+
+1. ❌ **Rutas de debug expuestas** - `routes/api.php:19-27`
+   - `/env-test` - Expone configuración con `dd(env('APP_NAME'), env('DB_DATABASE'), env('APP_DEBUG'))`
+   - `/migrate-refresh` - Permite resetear BD en producción con `Artisan::call('migrate:refresh', ['--seed' => true])`
+   - **Impacto**: Seguridad CRÍTICA - expone configuración y permite resetear BD
+   - **Esfuerzo**: 5 minutos (eliminar o proteger con middleware `env('APP_ENV') === 'local'`)
+
+2. ❌ **CI/CD configurando APP_DEBUG=true en producción** - `.github/workflows/main.yml:58-59`
+   - El pipeline fuerza `APP_DEBUG=true` en despliegue a producción
+   - **Impacto**: Seguridad CRÍTICA - expone información sensible en errores de producción
+   - **Esfuerzo**: 5 minutos (cambiar a `APP_DEBUG=false` o condicional)
 
 **Importantes:**
-- ⚠️ Falta rate limiting en autenticación
-- ⚠️ Logging de seguridad limitado
+- ⚠️ Headers de seguridad no verificados (CORS, CSP, HSTS) - 1 hora
+- ⚠️ Falta rate limiting en autenticación - 2-4 horas
+- ⚠️ Logging de seguridad limitado - Mejorar auditoría
 
-Para más detalles del análisis exhaustivo, ver [ANALISIS_EXHAUSTIVO_ZONIX.md](../ANALISIS_EXHAUSTIVO_ZONIX.md)
+### Deuda Técnica Identificada (Backend)
+
+1. **Código comentado extenso** (~160+ líneas identificadas):
+   - `GasTicket.php:76-109` - 34 líneas comentadas
+   - `SalesAdminController.php:30-39, 116-133` - 28 líneas comentadas
+   - `EmailController.php:26-51` - 26 líneas comentadas (método store() completo)
+   - `Station.php:32-49` - 18 líneas comentadas (relaciones y métodos)
+   - `PhoneController.php:20-21, 29, 65-79` - 17 líneas comentadas
+   - `DocumentController.php:68-85, 71, 101` - 18+ líneas comentadas
+   - `GasTicketController.php:32, 62-72` - 11 líneas comentadas
+   - `AddressController.php:33` - 1 línea comentada
+   - **Impacto**: Mantenibilidad - código muerto confunde
+   - **Esfuerzo**: 45 minutos (limpiar todos)
+
+2. **Logs de debug en producción**:
+   - `ProfileController.php:119, 152` - `Log::info()`
+   - `PhoneController.php:83` - `Log::info()`
+   - **Impacto**: Performance y seguridad - expone datos en logs
+   - **Esfuerzo**: 15 minutos (remover o usar logger con niveles)
+
+3. **Magic Numbers hardcodeados**:
+   - `GasTicketController.php:152` - `$maxDailyAppointments = 200;`
+   - `GasTicketController.php:88-89` - `if ($daysSinceLastAppointment < 21)`
+   - **Impacto**: Mantenibilidad - valores difíciles de cambiar
+   - **Esfuerzo**: 30 minutos (extraer a config)
+
+4. **Queries duplicadas y N+1 potenciales**:
+   - `GasTicketController::store()` - 2 queries similares (líneas 153, 163) - reutilizar resultado
+   - Búsqueda de profile por user_id duplicada (5+ ubicaciones)
+   - `DataVerificationController` - N+1 queries en bucles (métodos updateVerifications*)
+     - Múltiples `->get()` seguidos de `foreach` con `->save()` individual
+     - **Ejemplo**: `updateVerificationsDocuments()` línea 141-154
+   - **Impacto**: Performance - queries innecesarias y N+1 queries
+   - **Esfuerzo**: 1 hora (optimizar reutilizando resultados y usar bulk updates)
+
+5. **Falta paginación** (6+ endpoints):
+   - `GasTicketController::index()` - `->get()` sin paginación
+   - `ProfileController::index()` - `->get()` sin paginación
+   - `DocumentController::index()`, `AddressController::index()` - Similar
+   - **Impacto**: Performance - puede retornar miles de registros
+   - **Esfuerzo**: 2-3 horas (implementar `->paginate()`)
+
+6. **Inconsistencias en timezone**:
+   - Mezcla de `Carbon::now()` y `Carbon::now()->timezone('America/Caracas')`
+   - **Ubicación**: `GasTicketController.php:124, 148, 184-186`
+   - **Ejemplo**: Línea 148 usa `Carbon::now()->addDay()` sin timezone, línea 184 usa `Carbon::now()->timezone('America/Caracas')`
+   - **Impacto**: Funcionalidad - bugs potenciales de fecha
+   - **Esfuerzo**: 1 hora (estandarizar a `Carbon::now()->timezone('America/Caracas')`)
+
+7. **Falta índices en base de datos**:
+   - `gas_tickets.appointment_date` - Sin índice (usado en validación de 21 días y límite diario)
+   - `gas_tickets.station_id + appointment_date` - Sin índice compuesto (usado en queries diarias)
+   - `gas_tickets.status` - Sin índice (usado en filtros frecuentes)
+   - `profiles.user_id` - Sin índice único (usado para búsquedas frecuentes)
+   - Solo 2 índices encontrados en migraciones (`complaints_table`)
+   - **Impacto**: Performance - queries lentas con datos grandes
+   - **Esfuerzo**: 1-2 horas (crear migración con índices)
+
+8. **Bulk updates ineficientes en DataVerificationController**:
+   - Métodos `updateVerifications*` usan `foreach` con `->save()` individual en lugar de bulk update
+   - **Ejemplo**: `updateVerificationsDocuments()` línea 151-154 usa `foreach ($documents as $document) { $document->save(); }`
+   - Similar en `updateVerificationsAddresses()`, `updateVerificationsGasCylinders()`, etc.
+   - **Mejora**: Usar `Document::where('profile_id', $profile_id)->update(['approved' => true])`
+   - **Impacto**: Performance - N queries UPDATE donde debería ser 1
+   - **Esfuerzo**: 30 minutos (refactorizar a bulk updates)
 
 ## 🎯 Roadmap
 
