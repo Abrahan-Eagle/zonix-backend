@@ -48,17 +48,24 @@ ZONIX es un sistema integral de gestión de distribución de gas doméstico que 
 5. **Ticket marcado** → `dispatched` → Registro completo
 
 ## Project Context
-- Laravel 10 backend for ZONIX gas ticket management system
-- REST API with Laravel Sanctum authentication
-- MySQL database with complex relationships
+- This is the **Backend** (Laravel) part of the ZONIX project
+- **Backend**: Laravel 10 (PHP 8.1+) - REST API
+- **Frontend**: Flutter 3.35.2 (Dart 3.9.0) - Mobile app (see `zonix` directory)
+- **Database**: MySQL with complex relationships (users, profiles, tickets, stations)
+- **Authentication**: Laravel Sanctum for API authentication
+- **Project**: ZONIX is a gas distribution management system
 - Handles Google Sign-In, profiles, tickets, and role-based access
 
 ## File Structure
-- Controllers: `app/Http/Controllers/`
-- Models: `app/Models/`
-- Routes: `routes/api.php`
-- Migrations: `database/migrations/`
-- Seeders: `database/seeders/`
+- **Backend (this project)**: `/var/www/html/proyectos/AIPP/PRODUCCION/ZONIX/zonix-backend/`
+- **Frontend (separate repo)**: `/var/www/html/proyectos/AIPP/PRODUCCION/ZONIX/zonix/`
+- **Key backend files**: 
+  - Controllers: `app/Http/Controllers/`
+  - Models: `app/Models/`
+  - Routes: `routes/api.php`
+  - Migrations: `database/migrations/`
+  - Seeders: `database/seeders/`
+- **Key frontend files**: `lib/main.dart`, `lib/features/`
 
 ## Coding Standards
 
