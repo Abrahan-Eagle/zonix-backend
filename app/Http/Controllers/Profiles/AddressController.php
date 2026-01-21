@@ -86,13 +86,34 @@ public function store(Request $request)
     {
         $profile = Profile::where('user_id', $id)->firstOrFail();
 
-        $addresses = Address::where('profile_id', $profile->id)->get();
+        // Cargar la dirección junto con ciudad, estado y país
+        $addresses = Address::with(['city.state.country'])
+            ->where('profile_id', $profile->id)
+            ->get();
 
         if ($addresses->isEmpty()) {
             return response()->json(['message' => 'Address not found'], 404);
         }
 
-        return response()->json($addresses);
+        // Enriquecer respuesta con nombres de ciudad, estado y país
+        $mapped = $addresses->map(function ($address) {
+            return [
+                'id' => $address->id,
+                'street' => $address->street,
+                'house_number' => $address->house_number,
+                'postal_code' => $address->postal_code,
+                'latitude' => $address->latitude,
+                'longitude' => $address->longitude,
+                'status' => $address->status,
+                'profile_id' => $address->profile_id,
+                'city_id' => $address->city_id,
+                'city_name' => optional($address->city)->name,
+                'state_name' => optional(optional($address->city)->state)->name,
+                'country_name' => optional(optional(optional($address->city)->state)->country)->name,
+            ];
+        });
+
+        return response()->json($mapped);
     }
 
     /**
