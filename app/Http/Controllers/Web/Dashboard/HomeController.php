@@ -27,19 +27,6 @@ class HomeController extends Controller
     {
         $stats = [
             'users' => User::count(),
-            'profiles' => Profile::count(),
-            'products' => Product::count(),
-            'products_active' => Product::where('status', 'active')->count(),
-            'products_sold' => Product::where('status', 'sold')->count(),
-            'ranches' => Ranch::count(),
-            'orders' => Order::count(),
-            'orders_pending' => Order::where('status', 'pending')->count(),
-            'orders_completed' => Order::where('status', 'completed')->count(),
-            'conversations' => Conversation::where('is_active', true)->count(),
-            'reviews' => Review::count(),
-            'favorites' => Favorite::count(),
-            'reports' => Report::where('status', 'pending')->count(),
-            'advertisements' => Advertisement::where('is_active', true)->count(),
             'roles' => Role::count(),
         ];
 
@@ -49,13 +36,7 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        // Productos recientes (últimos 5)
-        $recent_products = Product::with(['ranch.profile'])
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-
-        return view('dashboard.home', compact('stats', 'recent_users', 'recent_products'));
+        return view('dashboard.home', compact('stats', 'recent_users'));
     }
 
     /**

@@ -69,7 +69,11 @@ mix.scripts([
 // mix.copyDirectory("resources/assets/frontend/legacy/fonts", "public/fonts")
 // .copyDirectory("resources/assets/frontend/legacy/images/img", "public/img")
 // Frontend Corral X: Imágenes del template nuevo
-mix.copyDirectory("resources/assets/frontend/corralx/images/images", "public/assets/front/images")
+mix.copyDirectory("resources/assets/frontend/corralx/images/images/Favicon", "public/assets/front/images/Favicon")
+   .copyDirectory("resources/assets/frontend/corralx/images/images/badges", "public/assets/front/images/badges")
+   .copyDirectory("resources/assets/frontend/corralx/images/images/partners", "public/assets/front/images/partners")
+   .copy("resources/assets/frontend/corralx/images/images/LOGO_CORRAL.png", "public/assets/front/images/LOGO_CORRAL.png")
+   .copy("resources/assets/frontend/corralx/images/images/phone-mockupx.jpeg", "public/assets/front/images/phone-mockupx.jpeg")
 // Frontend Legacy: Imágenes de usuario (avatars por defecto)
 // .copyDirectory("resources/assets/frontend/legacy/images/images/user", "public/images/user")
 // Dashboard: Todo el contenido (CSS, JS, fonts, icons, images, svg)

@@ -19,8 +19,8 @@
       <svg class="c-icon c-icon-lg">
         <use xlink:href="{{asset('icons/sprites/free.svg#cil-menu')}}"></use>
       </svg>
-    </button><a class="c-header-brand d-lg-none" href="{{ url('/') }}">
-      <img src="{{ asset('assets/front/images/LOGO_CORRAL.png') }}" alt="Corral X Logo" style="max-height: 20px; width: auto;">
+    <a class="c-header-brand d-lg-none" href="{{ url('/') }}" style="text-decoration: none;">
+      <img src="{{ asset('assets/front/images/logo-zonix.svg') }}" alt="Zonix Logo" style="max-height: 30px; width: auto;">
     </a>
     <button class="c-header-toggler c-class-toggler mfs-3 d-md-down-none" type="button" data-target="#sidebar"
       data-class="c-sidebar-lg-show" responsive="true">

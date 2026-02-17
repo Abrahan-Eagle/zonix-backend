@@ -3,9 +3,9 @@
 
 <div class="c-sidebar c-sidebar-dark c-sidebar-fixed c-sidebar-lg-show" id="sidebar">
   <div class="c-sidebar-brand d-lg-down-none">
-    <a href="{{ url('/') }}">
-      <img src="{{ asset('assets/front/images/LOGO_CORRAL.png') }}" alt="Corral X Logo" style="max-height: 22px; width: auto; padding: 5px 0;" class="c-sidebar-brand-full">
-      <span class="c-sidebar-brand-minimized" style="color: #386A20; font-weight: bold; font-size: 14px;">CX</span>
+    <a href="{{ url('/') }}" style="text-decoration: none;">
+      <img src="{{ asset('assets/front/images/logo-zonix.svg') }}" alt="Zonix Logo" style="max-height: 30px; width: auto;" class="c-sidebar-brand-full">
+      <span class="c-sidebar-brand-minimized" style="color: white; font-weight: bold; font-size: 14px;">Z</span>
     </a>
   </div>
 
