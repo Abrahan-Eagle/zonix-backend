@@ -122,3 +122,16 @@ Route::middleware('auth')->group(function () {
 Auth::routes();
 
 
+// Static Pages Routes
+Route::controller(App\Http\Controllers\PageController::class)->group(function () {
+    Route::get('/nosotros', 'about')->name('pages.about');
+    Route::get('/terminos', 'terms')->name('pages.terms');
+    Route::get('/privacidad', 'privacy')->name('pages.privacy');
+    Route::get('/cookies', 'cookies')->name('pages.cookies');
+    Route::get('/faq', 'faq')->name('pages.faq');
+    Route::get('/contacto', 'contact')->name('pages.contact');
+    Route::get('/blog', 'blog')->name('pages.blog');
+    Route::get('/carreras', 'careers')->name('pages.careers');
+    Route::get('/prensa', 'press')->name('pages.press');
+    Route::get('/ayuda', 'help')->name('pages.help');
+});
