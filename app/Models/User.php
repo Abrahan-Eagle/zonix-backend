@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'light',
         'google_id',        // ID único proporcionado por Google
         'given_name',       // Nombre de pila
         'family_name',      // Apellido
