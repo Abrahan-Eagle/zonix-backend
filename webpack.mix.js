@@ -76,8 +76,8 @@ mix.copyDirectory("resources/assets/frontend/corralx/images/images/Favicon", "pu
    .copy("resources/assets/frontend/corralx/images/images/phone-mockupx.jpeg", "public/assets/front/images/phone-mockupx.jpeg")
 // Frontend Legacy: Imágenes de usuario (avatars por defecto)
 // .copyDirectory("resources/assets/frontend/legacy/images/images/user", "public/images/user")
-// Dashboard: Todo el contenido (CSS, JS, fonts, icons, images, svg)
-// .copyDirectory("resources/assets/dashboard", "public")
+// Dashboard: Copiar solo assets estáticos seguros, evitar JS/CSS compilados
+.copyDirectory("resources/assets/dashboard", "public")
 // CoreUI Icons desde node_modules
 .copyDirectory("node_modules/@coreui/icons/fonts", "public/fonts")
 .copyDirectory("node_modules/@coreui/icons/svg/flag", "public/svg/flag")

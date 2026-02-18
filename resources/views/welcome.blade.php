@@ -71,11 +71,13 @@
               @auth
                   <a href="{{ url('/home') }}" class="btn-login">Dashboard</a>
               @else
+                  {{-- 
                   <a class="btn-login" href="{{ route('login') }}">Iniciar Sesión</a>
 
                   @if (Route::has('register'))
                       <a class="btn-register" href="{{ route('register') }}">Registrarse</a>
-                  @endif
+                  @endif 
+                  --}}
               @endauth
           @endif
         </div>
